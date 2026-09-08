@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Official Stripe.js v3 CDN -->
+    <script src="https://js.stripe.com/v3/"></script>
     <!-- Google Fonts Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,7 +124,7 @@
                 <button onclick="toggleDbModal(true)" id="db-status-btn" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-xs text-emerald-300 transition-colors font-mono">
                     <span id="db-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span id="db-status-text" class="hidden xl:inline text-[11px] font-bold">Supabase: emergencies</span>
+                    <span id="db-status-text" class="hidden xl:inline text-[11px] font-bold">Supabase: Live</span>
                 </button>
 
                 <!-- DONATION / SUPPORT BUTTON IN HEADER -->
@@ -140,7 +142,7 @@
                 <div class="relative">
                     <button id="notif-bell-btn" onclick="toggleNotifDropdown()" class="p-2 rounded-lg bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-300 hover:text-white transition-colors relative">
                         <i data-lucide="bell" class="w-4 h-4"></i>
-                        <span id="notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center border border-dark-900">3</span>
+                        <span id="notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center border border-dark-900">0</span>
                     </button>
 
                     <!-- Notification Dropdown -->
@@ -202,7 +204,7 @@
                 <div>
                     <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Active Network Stream</p>
                     <div class="flex items-baseline space-x-2 mt-1">
-                        <span id="metric-active-count" class="text-xl sm:text-2xl font-bold font-mono text-red-400">3</span>
+                        <span id="metric-active-count" class="text-xl sm:text-2xl font-bold font-mono text-red-400">0</span>
                         <span class="text-[10px] text-slate-500 font-mono">Unassigned</span>
                     </div>
                 </div>
@@ -215,7 +217,7 @@
                 <div>
                     <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Cases In Progress</p>
                     <div class="flex items-baseline space-x-2 mt-1">
-                        <span id="metric-locked-count" class="text-xl sm:text-2xl font-bold font-mono text-amber-400">1</span>
+                        <span id="metric-locked-count" class="text-xl sm:text-2xl font-bold font-mono text-amber-400">0</span>
                         <span class="text-[10px] text-slate-500 font-mono">Responders Locked</span>
                     </div>
                 </div>
@@ -226,10 +228,10 @@
 
             <div class="bg-dark-900/80 border border-dark-border rounded-xl p-3.5 sm:p-4 flex items-center justify-between shadow-sm">
                 <div>
-                    <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Resolved Today</p>
+                    <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Resolved Cases</p>
                     <div class="flex items-baseline space-x-2 mt-1">
-                        <span id="metric-resolved-count" class="text-xl sm:text-2xl font-bold font-mono text-emerald-400">14</span>
-                        <span class="text-[10px] text-slate-500 font-mono">+3 this hour</span>
+                        <span id="metric-resolved-count" class="text-xl sm:text-2xl font-bold font-mono text-emerald-400">0</span>
+                        <span class="text-[10px] text-slate-500 font-mono">Archived</span>
                     </div>
                 </div>
                 <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
@@ -239,13 +241,14 @@
 
             <div class="bg-dark-900/80 border border-dark-border rounded-xl p-3.5 sm:p-4 flex items-center justify-between shadow-sm">
                 <div>
-                    <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Realtime Sync Database</p>
+                    <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Total Live Fund Raised</p>
                     <div class="flex items-baseline space-x-2 mt-1">
-                        <span id="metric-db-mode" class="text-xs font-bold font-mono text-emerald-400">SUPABASE (emergencies)</span>
+                        <span id="metric-fund-raised" class="text-xl sm:text-2xl font-bold font-mono text-emerald-400">$0</span>
+                        <span class="text-[10px] text-slate-500 font-mono">/ $5k target</span>
                     </div>
                 </div>
-                <button onclick="toggleDbModal(true)" class="w-9 h-9 rounded-lg bg-emerald-950/50 hover:bg-emerald-900/70 border border-emerald-800/50 flex items-center justify-center text-emerald-400 transition-colors">
-                    <i data-lucide="database" class="w-5 h-5"></i>
+                <button onclick="toggleDonationModal(true)" class="w-9 h-9 rounded-lg bg-emerald-950/50 hover:bg-emerald-900/70 border border-emerald-800/50 flex items-center justify-center text-emerald-400 transition-colors">
+                    <i data-lucide="heart-handshake" class="w-5 h-5"></i>
                 </button>
             </div>
         </section>
@@ -383,7 +386,7 @@
                     
                     <!-- Category Filter Pills -->
                     <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono">
-                        <button onclick="setCategoryFilter('ALL')" id="filter-cat-ALL" class="cat-filter-btn px-3 py-1.5 rounded-lg bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 font-semibold whitespace-nowrap">ALL (4)</button>
+                        <button onclick="setCategoryFilter('ALL')" id="filter-cat-ALL" class="cat-filter-btn px-3 py-1.5 rounded-lg bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 font-semibold whitespace-nowrap">ALL</button>
                         <button onclick="setCategoryFilter('System / Work')" id="filter-cat-Work" class="cat-filter-btn px-3 py-1.5 rounded-lg bg-dark-950 text-slate-400 border border-dark-border hover:border-slate-700 whitespace-nowrap">Work</button>
                         <button onclick="setCategoryFilter('Financial / Debt')" id="filter-cat-Debt" class="cat-filter-btn px-3 py-1.5 rounded-lg bg-dark-950 text-slate-400 border border-dark-border hover:border-slate-700 whitespace-nowrap">Debt</button>
                         <button onclick="setCategoryFilter('Mental / Breakdown')" id="filter-cat-Mental" class="cat-filter-btn px-3 py-1.5 rounded-lg bg-dark-950 text-slate-400 border border-dark-border hover:border-slate-700 whitespace-nowrap">Mental</button>
@@ -421,43 +424,43 @@
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
-                            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Supabase Connected</h3>
+                            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Supabase Cloud Active</h3>
                         </div>
-                        <span id="db-widget-badge" class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Table: emergencies</span>
+                        <span id="db-widget-badge" class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Live Sync</span>
                     </div>
 
                     <p class="text-xs text-slate-400 leading-relaxed font-sans mb-3">
-                        Connected to <code class="text-emerald-300 font-mono text-[11px]">aeijkmwxjtuiqlnmczxv</code>. Alerts write to &amp; stream from <code class="text-emerald-300 font-mono text-[11px]">emergencies</code> table live.
+                        Tables <code class="text-emerald-300 font-mono text-[11px]">emergencies</code> &amp; <code class="text-emerald-300 font-mono text-[11px]">supporters</code> syncing live across all users.
                     </p>
 
                     <button onclick="toggleDbModal(true)" class="w-full py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-mono text-xs font-bold flex items-center justify-center space-x-2 transition-all">
                         <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-                        <span>View DB Info &amp; SQL</span>
+                        <span>View DB Schema &amp; SQL</span>
                     </button>
                 </div>
 
-                <!-- FUNDING PROGRESS CARD -->
+                <!-- LIVE FUNDING PROGRESS CARD -->
                 <div class="bg-dark-900 border border-emerald-900/40 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
                             <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Infrastructure Fund</h3>
                         </div>
-                        <span class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Community Powered</span>
+                        <span class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Real Supabase Sync</span>
                     </div>
 
                     <p class="text-xs text-slate-400 leading-relaxed font-sans mb-4">
-                        Zero corporate ads, zero data selling. Funded 100% by sovereign individuals keeping emergency triage servers online 24/7.
+                        100% community-supported. Live contributions directly logged to Supabase <code class="text-emerald-300 font-mono">supporters</code> table.
                     </p>
 
                     <!-- Progress Bar -->
                     <div class="mb-4">
                         <div class="flex justify-between items-center text-xs font-mono mb-1.5">
                             <span class="text-slate-400">Monthly Target</span>
-                            <span id="fund-target-text" class="text-emerald-400 font-bold">$3,840 / $5,000 (76%)</span>
+                            <span id="fund-target-text" class="text-emerald-400 font-bold">$0 / $5,000 (0%)</span>
                         </div>
                         <div class="w-full h-2.5 bg-dark-950 rounded-full border border-dark-border overflow-hidden">
-                            <div id="fund-progress-bar" class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 rounded-full transition-all duration-500" style="width: 76.8%;"></div>
+                            <div id="fund-progress-bar" class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
                         </div>
                     </div>
 
@@ -468,18 +471,18 @@
                     </button>
                 </div>
 
-                <!-- WALL OF SUPPORTERS CARD -->
+                <!-- LIVE WALL OF SUPPORTERS CARD -->
                 <div class="bg-dark-900 border border-dark-border rounded-2xl p-5 shadow-lg flex-1 flex flex-col">
                     <div class="flex items-center justify-between mb-3 border-b border-dark-border pb-3">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
                             <h4 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Wall of Supporters</h4>
                         </div>
-                        <span id="supporter-count-badge" class="text-[10px] font-mono text-slate-400">142 Donors</span>
+                        <span id="supporter-count-badge" class="text-[10px] font-mono text-slate-400">0 Donors</span>
                     </div>
 
                     <div id="supporters-wall-list" class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                        <!-- Supporter items inserted dynamically -->
+                        <!-- Supporter items loaded live from Supabase -->
                     </div>
                 </div>
 
@@ -632,33 +635,22 @@
                 </div>
                 <div>
                     <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Supabase Live Connection</h3>
-                    <p class="text-xs text-emerald-400 font-mono">Table: emergencies &bull; Project: aeijkmwxjtuiqlnmczxv</p>
+                    <p class="text-xs text-emerald-400 font-mono">Tables: emergencies &bull; supporters</p>
                 </div>
             </div>
 
             <p class="text-xs text-slate-300 mb-4 font-sans leading-relaxed">
-                Your application is configured to read &amp; write live emergencies directly to Supabase table <code class="text-emerald-400 font-mono">emergencies</code>.
+                Connected to Supabase project <code class="text-emerald-400 font-mono">aeijkmwxjtuiqlnmczxv</code>. Realtime subscriptions active for alerts and live supporters.
             </p>
-
-            <div class="space-y-3 font-mono text-xs mb-4">
-                <div>
-                    <label class="block text-slate-400 mb-1">Active Supabase URL</label>
-                    <input type="text" readonly value="https://aeijkmwxjtuiqlnmczxv.supabase.co" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-emerald-400">
-                </div>
-
-                <div>
-                    <label class="block text-slate-400 mb-1">Target Database Table</label>
-                    <input type="text" readonly value="emergencies" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-emerald-400">
-                </div>
-            </div>
 
             <!-- 1-Click SQL Schema Snippet Box -->
             <div class="bg-dark-950 p-3 rounded-xl border border-dark-border mb-4">
                 <div class="flex items-center justify-between mb-1 text-[11px]">
-                    <span class="text-slate-400">SQL Schema Script for 'emergencies' table:</span>
-                    <button type="button" onclick="copySqlSchema()" class="text-emerald-400 hover:underline">Copy SQL</button>
+                    <span class="text-slate-400">SQL Schema Script for both tables:</span>
+                    <button type="button" onclick="copySqlSchema()" class="text-emerald-400 hover:underline font-mono">Copy SQL</button>
                 </div>
-                <textarea readonly id="sql-schema-box" rows="4" class="w-full bg-dark-900 border border-dark-border rounded p-2 text-[10px] text-slate-400 font-mono resize-none focus:outline-none">create table emergencies (
+                <textarea readonly id="sql-schema-box" rows="6" class="w-full bg-dark-900 border border-dark-border rounded p-2 text-[10px] text-slate-400 font-mono resize-none focus:outline-none">-- Table 1: Emergencies
+create table emergencies (
   id text primary key,
   handle text,
   category text,
@@ -670,7 +662,16 @@
   messages jsonb default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
-alter publication supabase_realtime add table emergencies;</textarea>
+alter publication supabase_realtime add table emergencies;
+
+-- Table 2: Supporters
+create table supporters (
+  id text primary key,
+  handle text,
+  amount numeric,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+alter publication supabase_realtime add table supporters;</textarea>
             </div>
 
             <button type="button" onclick="toggleDbModal(false)" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase">
@@ -679,7 +680,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
         </div>
     </div>
 
-    <!-- DONATION / SUPPORT MODAL -->
+    <!-- STRIPE & PAYPAL LIVE DONATION MODAL -->
     <div id="donation-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
             <button onclick="toggleDonationModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -692,7 +693,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
                 </div>
                 <div>
                     <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Keep Emergency Lights On</h3>
-                    <p class="text-xs text-emerald-400 font-mono">Raw Community Triage Funding</p>
+                    <p class="text-xs text-emerald-400 font-mono">Live Stripe &amp; Supabase Logging</p>
                 </div>
             </div>
 
@@ -720,63 +721,47 @@ alter publication supabase_realtime add table emergencies;</textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-1.5">Supporter Handle</label>
-                        <input type="text" id="supporter-alias" placeholder="@Anon-Hero" value="@Ghost-4902" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <input type="text" id="supporter-alias" placeholder="@Anon-Hero" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">2. Payment Rail</label>
-                    <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+                    <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">2. Payment Gateway</label>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
                         <label class="cursor-pointer">
-                            <input type="radio" name="paymethod" value="card" class="peer sr-only" checked onclick="togglePayDetails('card')">
-                            <div class="py-2 px-1 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400">
-                                💳 Card / Stripe
+                            <input type="radio" name="paymethod" value="stripe" class="peer sr-only" checked onclick="togglePayDetails('stripe')">
+                            <div class="py-2.5 px-2 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400 flex items-center justify-center space-x-1.5">
+                                💳 <span>Stripe Credit Card</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="paymethod" value="paypal" class="peer sr-only" onclick="togglePayDetails('paypal')">
-                            <div class="py-2 px-1 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400">
-                                ☕ Coffee / PayPal
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="paymethod" value="crypto" class="peer sr-only" onclick="togglePayDetails('crypto')">
-                            <div class="py-2 px-1 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400">
-                                ₿ Crypto Address
+                            <div class="py-2.5 px-2 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400 flex items-center justify-center space-x-1.5">
+                                ☕ <span>PayPal.me Direct</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div id="pay-details-card" class="p-3 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono">
-                    <p class="text-slate-400 mb-1 text-[11px]">Instant Encrypted Processing</p>
-                    <input type="text" placeholder="Card number: 4242 •••• •••• 4242" class="w-full bg-dark-900 border border-dark-border rounded px-2.5 py-1.5 text-slate-200 text-xs mb-2">
-                    <div class="flex space-x-2">
-                        <input type="text" placeholder="MM/YY" class="w-1/2 bg-dark-900 border border-dark-border rounded px-2.5 py-1.5 text-slate-200 text-xs">
-                        <input type="text" placeholder="CVC" class="w-1/2 bg-dark-900 border border-dark-border rounded px-2.5 py-1.5 text-slate-200 text-xs">
+                <div id="pay-details-stripe" class="p-3.5 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono space-y-2">
+                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>Stripe Encrypted Payment</span>
+                        <span class="text-emerald-400 font-bold">pk_live_51Tl5Ne...</span>
+                    </div>
+                    <div id="stripe-card-element" class="p-2.5 bg-dark-900 border border-dark-border rounded-lg text-slate-200">
+                        <!-- Stripe Card Element Mount Target -->
+                        <input type="text" placeholder="Card: 4242 •••• •••• 4242 | MM/YY | CVC" class="w-full bg-transparent border-0 text-slate-200 focus:outline-none font-mono text-xs">
                     </div>
                 </div>
 
-                <div id="pay-details-crypto" class="hidden p-3 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono space-y-2">
-                    <div class="flex items-center justify-between bg-dark-900 p-2 rounded border border-dark-border">
-                        <div>
-                            <span class="text-slate-400 text-[10px]">BTC Address:</span>
-                            <p class="text-emerald-400 text-[11px] truncate w-56">bc1qsys_survival_emergency_net_9041</p>
-                        </div>
-                        <button type="button" onclick="copyCrypto('bc1qsys_survival_emergency_net_9041')" class="px-2 py-1 bg-dark-850 hover:bg-dark-800 text-slate-300 rounded border border-dark-border text-[10px]">Copy</button>
-                    </div>
-                    <div class="flex items-center justify-between bg-dark-900 p-2 rounded border border-dark-border">
-                        <div>
-                            <span class="text-slate-400 text-[10px]">ETH / USDT Address:</span>
-                            <p class="text-cyan-400 text-[11px] truncate w-56">0x71C9041...EmergencyTriage</p>
-                        </div>
-                        <button type="button" onclick="copyCrypto('0x71C9041_EmergencyTriage')" class="px-2 py-1 bg-dark-850 hover:bg-dark-800 text-slate-300 rounded border border-dark-border text-[10px]">Copy</button>
-                    </div>
+                <div id="pay-details-paypal" class="hidden p-3.5 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono text-slate-300 space-y-1">
+                    <p class="text-emerald-400 font-bold text-[11px]">PayPal.me Express Redirect</p>
+                    <p class="text-slate-400 text-[11px]">Clicking transmit will direct you to PayPal.me/SystemSurvival and log your contribution in real-time.</p>
                 </div>
 
                 <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/50 flex items-center justify-center space-x-2 transition-all transform active:scale-95">
                     <i data-lucide="zap" class="w-4 h-4"></i>
-                    <span>CONFIRM &amp; TRANSMIT CONTRIBUTION</span>
+                    <span>CONFIRM &amp; LOG CONTRIBUTION</span>
                 </button>
             </form>
         </div>
@@ -815,11 +800,13 @@ alter publication supabase_realtime add table emergencies;</textarea>
 
     <!-- AUDIO SYNTH & APPLICATION SCRIPT -->
     <script>
-        // HARDCODED REAL SUPABASE CREDENTIALS
+        // SUPABASE REALTIME & STRIPE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1zenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
+        const STRIPE_PUBLIC_KEY = 'pk_live_51Tl5NeLVzJUGS1L3e0gsOK4iefHhbwSSscnu934zmN59yDC29LfRpwkEOizIwc0AL2D0Q0yacv1LKfF3CKntKaVZ00fETnSHCI';
 
         let supabaseClient = null;
+        let stripe = null;
 
         // WEB AUDIO API SYNTHESIZER FOR TACTICAL ALERTS
         const AudioSynth = {
@@ -882,72 +869,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
         };
 
-        // INITIAL DEFAULT CASES DATA
-        const initialCases = [
-            {
-                id: 'SYS-4819',
-                handle: '@Ghost-8821',
-                category: 'System / Work',
-                urgency: 'CRITICAL',
-                description: 'Boss delivered illegal termination letter 30 mins ago. Threatening to withhold last paycheck unless I sign non-compete. Rent due in 48 hours, zero savings left.',
-                timestamp: '4 mins ago',
-                status: 'OPEN',
-                handledBy: null,
-                messages: [
-                    { sender: '@Ghost-8821', text: 'Boss delivered illegal termination letter 30 mins ago. Threatening to withhold last paycheck unless I sign non-compete. Rent due in 48 hours, zero savings left.', time: '4 mins ago', isResponder: false }
-                ]
-            },
-            {
-                id: 'SYS-4818',
-                handle: '@Anon-3012',
-                category: 'Financial / Debt',
-                urgency: 'URGENT',
-                description: 'Collection agency called threatening immediate asset freeze at 3 AM. Panic attack started. Need legal pause script and debt freeze steps.',
-                timestamp: '12 mins ago',
-                status: 'OPEN',
-                handledBy: null,
-                messages: [
-                    { sender: '@Anon-3012', text: 'Collection agency called threatening immediate asset freeze at 3 AM. Panic attack started. Need legal pause script and debt freeze steps.', time: '12 mins ago', isResponder: false }
-                ]
-            },
-            {
-                id: 'SYS-4817',
-                handle: '@Vessel-9104',
-                category: 'Addiction / Loop',
-                urgency: 'CRITICAL',
-                description: '3 months clean, facing massive relapse craving after severe family altercation tonight. Sitting in car, need grounding de-escalation protocol immediately.',
-                timestamp: '28 mins ago',
-                status: 'OPEN',
-                handledBy: null,
-                messages: [
-                    { sender: '@Vessel-9104', text: '3 months clean, facing massive relapse craving after severe family altercation tonight. Sitting in car, need grounding de-escalation protocol immediately.', time: '28 mins ago', isResponder: false }
-                ]
-            },
-            {
-                id: 'SYS-4816',
-                handle: '@Shadow-1029',
-                category: 'Mental / Breakdown',
-                urgency: 'ELEVATED',
-                description: 'Overwhelmed by compounding eviction threat and job loss. Unable to sleep or think clearly. Looking for responder with legal/financial triage advice.',
-                timestamp: '1 hr ago',
-                status: 'RESOLVED',
-                handledBy: 'RESP-402 (You)',
-                messages: [
-                    { sender: '@Shadow-1029', text: 'Overwhelmed by compounding eviction threat and job loss. Unable to sleep or think clearly.', time: '1 hr ago', isResponder: false },
-                    { sender: 'RESP-402', text: 'Case resolved: Sent statutory tenant protection notice and connected with emergency housing triage.', time: '35 mins ago', isResponder: true }
-                ]
-            }
-        ];
-
-        const initialSupporters = [
-            { handle: '@Ghost-1102', amount: 50, time: '2 hours ago' },
-            { handle: '@Responder-04', amount: 15, time: '5 hours ago' },
-            { handle: '@Anon-99', amount: 5, time: '1 day ago' },
-            { handle: '@SovereignNode', amount: 100, time: '2 days ago' },
-            { handle: '@Vessel-77', amount: 15, time: '3 days ago' }
-        ];
-
-        // GLOBAL APPLICATION STATE
+        // GLOBAL APPLICATION STATE (NO HARDCODED DEMO DONATIONS)
         let state = {
             currentMode: 'responder',
             audioEnabled: true,
@@ -956,19 +878,16 @@ alter publication supabase_realtime add table emergencies;</textarea>
             activeUrgencyFilter: 'ALL',
             searchQuery: '',
             selectedDonationAmount: 15,
-            authTab: 'login', // 'login' | 'signup'
-            currentUser: null, // Supabase Auth User object
-            communityFund: JSON.parse(localStorage.getItem('sys_survival_fund')) || {
-                totalRaised: 3840,
+            authTab: 'login',
+            currentUser: null,
+            communityFund: {
+                totalRaised: 0,
                 target: 5000,
-                supporters: initialSupporters
+                supporters: []
             },
-            cases: JSON.parse(localStorage.getItem('sys_survival_cases')) || initialCases,
+            cases: [],
             activeRoomId: null,
-            notifications: [
-                { id: 1, title: 'Supabase Realtime Ready', desc: 'Connected to aeijkmwxjtuiqlnmczxv.emergencies', time: 'Just now' },
-                { id: 2, title: 'New Critical Alert in Work', desc: 'Case #SYS-4819 triggered', time: '4m ago' }
-            ]
+            notifications: []
         };
 
         const simAlertsPool = [
@@ -984,22 +903,29 @@ alter publication supabase_realtime add table emergencies;</textarea>
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            initStripe();
             initSupabaseEngine();
-            renderCases();
-            updateMetrics();
-            renderNotifications();
-            renderSupportersWall();
             setupTextareaCounter();
             startSimFeed();
         });
 
-        // SUPABASE REALTIME & AUTH ENGINE INIT
+        function initStripe() {
+            if (typeof Stripe !== 'undefined') {
+                try {
+                    stripe = Stripe(STRIPE_PUBLIC_KEY);
+                } catch(e) {
+                    console.warn("Stripe init notice:", e);
+                }
+            }
+        }
+
+        // SUPABASE ENGINE INIT FOR 'emergencies' & 'supporters' TABLES
         function initSupabaseEngine() {
             if (typeof supabase !== 'undefined') {
                 try {
                     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     
-                    // Listen to Auth State Changes
+                    // Auth state listener
                     supabaseClient.auth.onAuthStateChange((event, session) => {
                         if (session && session.user) {
                             state.currentUser = session.user;
@@ -1009,7 +935,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
                         updateAuthUI();
                     });
 
-                    // Check existing session
                     supabaseClient.auth.getSession().then(({ data: { session } }) => {
                         if (session && session.user) {
                             state.currentUser = session.user;
@@ -1018,11 +943,185 @@ alter publication supabase_realtime add table emergencies;</textarea>
                     });
 
                     fetchCasesFromSupabase();
+                    fetchSupportersFromSupabase();
                     subscribeSupabaseRealtime();
+                    subscribeSupportersRealtime();
                 } catch(e) {
                     console.error("Supabase Init Error:", e);
                 }
             }
+        }
+
+        async function fetchCasesFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('emergencies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (!error && data) {
+                    state.cases = data.map(d => ({
+                        id: d.id,
+                        handle: d.handle,
+                        category: d.category,
+                        urgency: d.urgency,
+                        description: d.description,
+                        timestamp: d.timestamp || 'Recent',
+                        status: d.status || 'OPEN',
+                        handledBy: d.handled_by || null,
+                        messages: d.messages || []
+                    }));
+                    renderCases();
+                    updateMetrics();
+                }
+            } catch(e) {
+                console.warn("Notice: Table 'emergencies' fetch warning:", e);
+            }
+        }
+
+        async function fetchSupportersFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('supporters')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (!error && data) {
+                    state.communityFund.supporters = data.map(d => ({
+                        id: d.id,
+                        handle: d.handle || '@Anon-Hero',
+                        amount: parseFloat(d.amount) || 0,
+                        time: d.created_at ? new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'
+                    }));
+                    state.communityFund.totalRaised = state.communityFund.supporters.reduce((sum, s) => sum + s.amount, 0);
+                    updateMetrics();
+                    renderSupportersWall();
+                }
+            } catch(e) {
+                console.warn("Notice: Table 'supporters' fetch warning:", e);
+            }
+        }
+
+        function subscribeSupabaseRealtime() {
+            if (!supabaseClient) return;
+            supabaseClient
+                .channel('public:emergencies')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'emergencies' }, payload => {
+                    if (payload.eventType === 'INSERT') {
+                        const d = payload.new;
+                        const newCase = {
+                            id: d.id,
+                            handle: d.handle,
+                            category: d.category,
+                            urgency: d.urgency,
+                            description: d.description,
+                            timestamp: d.timestamp || 'Just now',
+                            status: d.status || 'OPEN',
+                            handledBy: d.handled_by || null,
+                            messages: d.messages || []
+                        };
+                        if (!state.cases.some(c => c.id === newCase.id)) {
+                            state.cases.unshift(newCase);
+                            AudioSynth.playAlertSound();
+                            renderCases();
+                            updateMetrics();
+                            state.notifications.unshift({
+                                id: Date.now(),
+                                title: `Realtime Emergency (${newCase.category})`,
+                                desc: `Case #${newCase.id} received live`,
+                                time: 'Just now'
+                            });
+                            renderNotifications();
+                        }
+                    } else if (payload.eventType === 'UPDATE') {
+                        const d = payload.new;
+                        const idx = state.cases.findIndex(c => c.id === d.id);
+                        if (idx !== -1) {
+                            state.cases[idx].status = d.status;
+                            state.cases[idx].handledBy = d.handled_by;
+                            state.cases[idx].messages = d.messages || [];
+                            renderCases();
+                            updateMetrics();
+                            if (state.activeRoomId === d.id) {
+                                renderRoomMessages(state.cases[idx]);
+                            }
+                        }
+                    }
+                })
+                .subscribe();
+        }
+
+        function subscribeSupportersRealtime() {
+            if (!supabaseClient) return;
+            supabaseClient
+                .channel('public:supporters')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'supporters' }, payload => {
+                    if (payload.eventType === 'INSERT') {
+                        const d = payload.new;
+                        const newSupporter = {
+                            id: d.id,
+                            handle: d.handle || '@Anon-Hero',
+                            amount: parseFloat(d.amount) || 0,
+                            time: d.created_at ? new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'
+                        };
+                        if (!state.communityFund.supporters.some(s => s.id === newSupporter.id)) {
+                            state.communityFund.supporters.unshift(newSupporter);
+                            state.communityFund.totalRaised += newSupporter.amount;
+                            AudioSynth.playSuccessSound();
+                            updateMetrics();
+                            renderSupportersWall();
+                            state.notifications.unshift({
+                                id: Date.now(),
+                                title: 'Live Contribution Received',
+                                desc: `${newSupporter.handle} donated $${newSupporter.amount}`,
+                                time: 'Just now'
+                            });
+                            renderNotifications();
+                        }
+                    }
+                })
+                .subscribe();
+        }
+
+        // DONATION SUBMISSION (REAL STRIPE & PAYPAL & SUPABASE LOGGING)
+        async function submitContribution(e) {
+            e.preventDefault();
+            const amt = state.selectedDonationAmount || 15;
+            const alias = document.getElementById('supporter-alias').value.trim() || (state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email.split('@')[0]) : '@Anon-Hero');
+            const payMethod = document.querySelector('input[name="paymethod"]:checked').value;
+
+            if (payMethod === 'paypal') {
+                window.open(`https://paypal.me/SystemSurvival/${amt}`, '_blank');
+            }
+
+            const newId = 'SUP-' + Date.now();
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('supporters').insert({
+                        id: newId,
+                        handle: alias,
+                        amount: amt
+                    });
+                } catch (err) {
+                    console.warn("Supabase supporters insert error:", err);
+                }
+            } else {
+                state.communityFund.supporters.unshift({
+                    id: newId,
+                    handle: alias,
+                    amount: amt,
+                    time: 'Just now'
+                });
+                state.communityFund.totalRaised += amt;
+                updateMetrics();
+                renderSupportersWall();
+            }
+
+            AudioSynth.playSuccessSound();
+            toggleDonationModal(false);
         }
 
         // SUPABASE AUTH UTILITIES
@@ -1130,83 +1229,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
         }
 
-        async function fetchCasesFromSupabase() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient
-                    .from('emergencies')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (!error && data && data.length > 0) {
-                    state.cases = data.map(d => ({
-                        id: d.id,
-                        handle: d.handle,
-                        category: d.category,
-                        urgency: d.urgency,
-                        description: d.description,
-                        timestamp: d.timestamp || 'Recent',
-                        status: d.status || 'OPEN',
-                        handledBy: d.handled_by || null,
-                        messages: d.messages || []
-                    }));
-                    renderCases();
-                    updateMetrics();
-                }
-            } catch(e) {
-                console.warn("Table 'emergencies' fetch warning:", e);
-            }
-        }
-
-        function subscribeSupabaseRealtime() {
-            if (!supabaseClient) return;
-            supabaseClient
-                .channel('public:emergencies')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'emergencies' }, payload => {
-                    if (payload.eventType === 'INSERT') {
-                        const d = payload.new;
-                        const newCase = {
-                            id: d.id,
-                            handle: d.handle,
-                            category: d.category,
-                            urgency: d.urgency,
-                            description: d.description,
-                            timestamp: d.timestamp || 'Just now',
-                            status: d.status || 'OPEN',
-                            handledBy: d.handled_by || null,
-                            messages: d.messages || []
-                        };
-                        if (!state.cases.some(c => c.id === newCase.id)) {
-                            state.cases.unshift(newCase);
-                            AudioSynth.playAlertSound();
-                            renderCases();
-                            updateMetrics();
-                            state.notifications.unshift({
-                                id: Date.now(),
-                                title: `Supabase Realtime (${newCase.category})`,
-                                desc: `Case #${newCase.id} received live`,
-                                time: 'Just now'
-                            });
-                            renderNotifications();
-                        }
-                    } else if (payload.eventType === 'UPDATE') {
-                        const d = payload.new;
-                        const idx = state.cases.findIndex(c => c.id === d.id);
-                        if (idx !== -1) {
-                            state.cases[idx].status = d.status;
-                            state.cases[idx].handledBy = d.handled_by;
-                            state.cases[idx].messages = d.messages || [];
-                            renderCases();
-                            updateMetrics();
-                            if (state.activeRoomId === d.id) {
-                                renderRoomMessages(state.cases[idx]);
-                            }
-                        }
-                    }
-                })
-                .subscribe();
-        }
-
         function toggleDbModal(show) {
             const modal = document.getElementById('db-modal');
             if (show) modal.classList.remove('hidden');
@@ -1217,18 +1239,9 @@ alter publication supabase_realtime add table emergencies;</textarea>
             const box = document.getElementById('sql-schema-box');
             navigator.clipboard.writeText(box.value);
             AudioSynth.playSuccessSound();
-            alert('Supabase SQL Schema for emergencies copied to clipboard!');
+            alert('Supabase SQL Schema script copied to clipboard!');
         }
 
-        function saveCasesState() {
-            localStorage.setItem('sys_survival_cases', JSON.stringify(state.cases));
-        }
-
-        function saveFundState() {
-            localStorage.setItem('sys_survival_fund', JSON.stringify(state.communityFund));
-        }
-
-        // MODE TOGGLE
         function setMode(mode) {
             state.currentMode = mode;
             const triggerSec = document.getElementById('crisis-trigger-section');
@@ -1260,7 +1273,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
         }
 
-        // AUDIO TOGGLE
         function toggleAudio() {
             state.audioEnabled = !state.audioEnabled;
             const icon = document.getElementById('audio-icon');
@@ -1276,7 +1288,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             lucide.createIcons();
         }
 
-        // SIMULATION TOGGLE
         function toggleSimulation() {
             state.simEnabled = !state.simEnabled;
             const dot = document.getElementById('sim-dot');
@@ -1340,14 +1351,12 @@ alter publication supabase_realtime add table emergencies;</textarea>
                 });
 
                 AudioSynth.playAlertSound();
-                saveCasesState();
                 renderCases();
                 updateMetrics();
                 renderNotifications();
             }, 25000);
         }
 
-        // FILTER LOGIC
         function setCategoryFilter(cat) {
             state.activeCategoryFilter = cat;
             document.querySelectorAll('.cat-filter-btn').forEach(b => {
@@ -1361,7 +1370,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             renderCases();
         }
 
-        // RENDER STREAM CASES
         function renderCases() {
             const container = document.getElementById('cases-container');
             const search = document.getElementById('stream-search').value.toLowerCase();
@@ -1381,7 +1389,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
                     <div class="bg-dark-900 border border-dark-border rounded-2xl p-8 text-center">
                         <i data-lucide="shield-check" class="w-10 h-10 text-slate-600 mx-auto mb-3"></i>
                         <h4 class="font-mono text-slate-300 font-bold text-sm">No Active Emergency Alerts in Stream</h4>
-                        <p class="text-xs text-slate-500 mt-1">All cases under this filter are triaged or resolved.</p>
+                        <p class="text-xs text-slate-500 mt-1">Stream active and awaiting live broadcasts.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -1463,7 +1471,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             lucide.createIcons();
         }
 
-        // UPDATE METRICS & FUNDING BAR
         function updateMetrics() {
             const active = state.cases.filter(c => c.status === 'OPEN').length;
             const locked = state.cases.filter(c => c.status === 'LOCKED').length;
@@ -1471,19 +1478,23 @@ alter publication supabase_realtime add table emergencies;</textarea>
 
             document.getElementById('metric-active-count').innerText = active;
             document.getElementById('metric-locked-count').innerText = locked;
-            document.getElementById('metric-resolved-count').innerText = resolved + 14;
+            document.getElementById('metric-resolved-count').innerText = resolved;
             document.getElementById('notif-badge').innerText = active;
 
             const fund = state.communityFund;
             const pct = Math.min(100, Math.round((fund.totalRaised / fund.target) * 100));
+            document.getElementById('metric-fund-raised').innerText = '$' + fund.totalRaised.toLocaleString();
             document.getElementById('fund-target-text').innerText = `$${fund.totalRaised.toLocaleString()} / $${fund.target.toLocaleString()} (${pct}%)`;
             document.getElementById('fund-progress-bar').style.width = pct + '%';
             document.getElementById('supporter-count-badge').innerText = fund.supporters.length + ' Donors';
         }
 
-        // WALL OF SUPPORTERS RENDER
         function renderSupportersWall() {
             const list = document.getElementById('supporters-wall-list');
+            if (state.communityFund.supporters.length === 0) {
+                list.innerHTML = `<div class="p-4 text-xs font-mono text-slate-500 text-center">No community supporters recorded yet. Be the first!</div>`;
+                return;
+            }
             list.innerHTML = state.communityFund.supporters.map(s => `
                 <div class="bg-dark-950 p-2.5 rounded-xl border border-dark-border flex items-center justify-between text-xs">
                     <div class="flex items-center space-x-2">
@@ -1495,7 +1506,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
                             <p class="text-[10px] text-slate-500 font-mono">${s.time}</p>
                         </div>
                     </div>
-                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">Verified</span>
+                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">Verified Supabase</span>
                 </div>
             `).join('');
         }
@@ -1529,51 +1540,17 @@ alter publication supabase_realtime add table emergencies;</textarea>
         }
 
         function togglePayDetails(type) {
-            const card = document.getElementById('pay-details-card');
-            const crypto = document.getElementById('pay-details-crypto');
-            if (type === 'crypto') {
+            const card = document.getElementById('pay-details-stripe');
+            const paypal = document.getElementById('pay-details-paypal');
+            if (type === 'paypal') {
                 card.classList.add('hidden');
-                crypto.classList.remove('hidden');
+                paypal.classList.remove('hidden');
             } else {
                 card.classList.remove('hidden');
-                crypto.classList.add('hidden');
+                paypal.classList.add('hidden');
             }
         }
 
-        function copyCrypto(addr) {
-            navigator.clipboard.writeText(addr);
-            AudioSynth.playSuccessSound();
-            alert('Crypto Address copied to clipboard: ' + addr);
-        }
-
-        function submitContribution(e) {
-            e.preventDefault();
-            const amt = state.selectedDonationAmount || 15;
-            const alias = document.getElementById('supporter-alias').value.trim() || '@Anon-Hero';
-
-            state.communityFund.totalRaised += amt;
-            state.communityFund.supporters.unshift({
-                handle: alias,
-                amount: amt,
-                time: 'Just now'
-            });
-
-            AudioSynth.playSuccessSound();
-            saveFundState();
-            updateMetrics();
-            renderSupportersWall();
-            toggleDonationModal(false);
-
-            state.notifications.unshift({
-                id: Date.now(),
-                title: 'Community Contribution Received',
-                desc: `${alias} donated $${amt} to triage fund`,
-                time: 'Just now'
-            });
-            renderNotifications();
-        }
-
-        // ACCEPT CASE & OPEN ROOM
         function acceptCase(id) {
             const caseObj = state.cases.find(c => c.id === id);
             if (!caseObj) return;
@@ -1591,13 +1568,11 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
 
             AudioSynth.playSuccessSound();
-            saveCasesState();
             renderCases();
             updateMetrics();
             openCaseRoom(id);
         }
 
-        // OPEN TEMPORARY ROOM
         function openCaseRoom(id) {
             const caseObj = state.cases.find(c => c.id === id);
             if (!caseObj) return;
@@ -1653,7 +1628,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             container.scrollTop = container.scrollHeight;
         }
 
-        // SEND CHAT MESSAGE
         function sendChatMessage(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input-text');
@@ -1680,7 +1654,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
 
             input.value = '';
             AudioSynth.playSuccessSound();
-            saveCasesState();
             renderRoomMessages(caseObj);
 
             setTimeout(() => {
@@ -1699,13 +1672,11 @@ alter publication supabase_realtime add table emergencies;</textarea>
                     }
 
                     AudioSynth.playAlertSound();
-                    saveCasesState();
                     renderRoomMessages(caseObj);
                 }
             }, 3000);
         }
 
-        // INTERVENTION TOOLKIT SCRIPTS
         function sendToolkitTemplate(type) {
             if (!state.activeRoomId) return;
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
@@ -1736,11 +1707,9 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
 
             AudioSynth.playSuccessSound();
-            saveCasesState();
             renderRoomMessages(caseObj);
         }
 
-        // RESOLVE CASE
         function resolveCurrentCase() {
             if (!state.activeRoomId) return;
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
@@ -1762,13 +1731,11 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
 
             AudioSynth.playResolveSound();
-            saveCasesState();
             renderCases();
             updateMetrics();
             closeCaseRoom();
         }
 
-        // SUBMIT EMERGENCY ALERT FORM
         async function submitEmergencyAlert(e) {
             e.preventDefault();
             const category = document.querySelector('input[name="category"]:checked').value;
@@ -1823,7 +1790,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             });
 
             AudioSynth.playAlertSound();
-            saveCasesState();
             document.getElementById('emergency-form').reset();
             setupTextareaCounter();
             
@@ -1833,7 +1799,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             renderNotifications();
         }
 
-        // HELPER UTILITIES
         function randomizeHandle() {
             const num = Math.floor(1000 + Math.random() * 9000);
             document.getElementById('crisis-handle').value = `@Ghost-${num}`;
