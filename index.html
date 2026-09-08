@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYSTEM SURVIVAL // Emergency & Crisis Network</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts Inter -->
+    <!-- Google Fonts Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -118,7 +118,7 @@
             <!-- Right Controls -->
             <div class="flex items-center space-x-2 sm:space-x-2.5">
                 
-                <!-- SUPABASE DATABASE STATUS / CONFIG BUTTON -->
+                <!-- SUPABASE DATABASE STATUS BUTTON -->
                 <button onclick="toggleDbModal(true)" id="db-status-btn" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-xs text-emerald-300 transition-colors font-mono">
                     <span id="db-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
@@ -129,13 +129,6 @@
                 <button onclick="toggleDonationModal(true)" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/60 text-xs text-emerald-300 transition-all font-mono font-medium shadow-sm">
                     <i data-lucide="heart-handshake" class="w-3.5 h-3.5 text-emerald-400"></i>
                     <span class="hidden sm:inline">Support</span>
-                </button>
-
-                <!-- Live Simulation Toggle -->
-                <button id="sim-toggle-btn" onclick="toggleSimulation()" title="Toggle simulated live stream alerts" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-dark-850 hover:bg-dark-800 border border-dark-border text-xs text-slate-300 transition-colors">
-                    <span id="sim-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Sim:</span>
-                    <span id="sim-text" class="font-mono text-xs font-semibold text-emerald-400">ON</span>
                 </button>
 
                 <!-- Audio Toggle -->
@@ -162,11 +155,22 @@
                     </div>
                 </div>
 
-                <!-- User Profile / ID Pill -->
-                <div class="flex items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-2 pr-3 py-1">
-                    <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                    <span class="text-xs font-mono text-slate-300 font-medium">RESP-402</span>
+                <!-- USER SUPABASE AUTH PILL / LOGIN BUTTON -->
+                <div id="auth-header-container">
+                    <button onclick="toggleAuthModal(true)" id="login-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800/60 text-xs font-mono text-indigo-300 font-bold transition-all shadow-sm">
+                        <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                        <span>Login / Sign Up</span>
+                    </button>
+                    
+                    <div id="logged-in-user-pill" class="hidden flex items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-2.5 pr-1.5 py-1">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                        <span id="user-display-name" class="text-xs font-mono text-slate-200 font-medium max-w-[110px] truncate">@Responder</span>
+                        <button onclick="handleSignOut()" title="Sign Out" class="p-1 rounded-full text-slate-400 hover:text-red-400 hover:bg-dark-800 transition-colors">
+                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </div>
     </header>
@@ -180,8 +184,8 @@
             <button id="mobile-mode-crisis" onclick="setMode('crisis')" class="flex-1 py-1.5 text-center text-xs font-medium rounded-md text-slate-400 bg-dark-950 border border-dark-border">
                 Trigger Emergency
             </button>
-            <button onclick="toggleDbModal(true)" class="p-1.5 text-emerald-400 bg-dark-850 border border-dark-border rounded-md">
-                <i data-lucide="database" class="w-4 h-4"></i>
+            <button onclick="toggleAuthModal(true)" class="p-1.5 text-indigo-400 bg-dark-850 border border-dark-border rounded-md">
+                <i data-lucide="user" class="w-4 h-4"></i>
             </button>
             <button onclick="toggleDonationModal(true)" class="p-1.5 text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 rounded-md">
                 <i data-lucide="heart-handshake" class="w-4 h-4"></i>
@@ -565,6 +569,56 @@
 
     </main>
 
+    <!-- SUPABASE AUTHENTICATION MODAL (LOGIN & SIGN UP) -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-dark-900 border border-indigo-900/50 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="toggleAuthModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-950 border border-indigo-800/60 flex items-center justify-center text-indigo-400 shadow-inner">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Responder Access</h3>
+                    <p class="text-xs text-indigo-400 font-mono">Supabase Auth Session</p>
+                </div>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex bg-dark-950 p-1 rounded-xl border border-dark-border mb-4 font-mono text-xs">
+                <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-1.5 text-center rounded-lg font-semibold bg-dark-800 text-slate-100">Sign In</button>
+                <button type="button" id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-1.5 text-center rounded-lg text-slate-400 hover:text-slate-200">Register</button>
+            </div>
+
+            <!-- Error/Success Alert Box -->
+            <div id="auth-alert" class="hidden mb-4 p-3 rounded-xl border text-xs font-mono"></div>
+
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4 font-mono text-xs">
+                <div id="field-username" class="hidden">
+                    <label class="block text-slate-300 mb-1">Handle / Username</label>
+                    <input type="text" id="auth-username" placeholder="@Responder-01" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="responder@survival.net" required class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 mb-1">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required minlength="6" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <button type="submit" id="auth-submit-btn" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-950/50 flex items-center justify-center space-x-2 transition-all">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span id="auth-submit-text">SIGN IN TO NETWORK</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- SUPABASE DATABASE CONFIGURATION MODAL -->
     <div id="db-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
@@ -761,7 +815,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
 
     <!-- AUDIO SYNTH & APPLICATION SCRIPT -->
     <script>
-        // HARDCODED REAL SUPABASE CREDENTIALS PROVIDED BY USER
+        // HARDCODED REAL SUPABASE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
 
@@ -902,6 +956,8 @@ alter publication supabase_realtime add table emergencies;</textarea>
             activeUrgencyFilter: 'ALL',
             searchQuery: '',
             selectedDonationAmount: 15,
+            authTab: 'login', // 'login' | 'signup'
+            currentUser: null, // Supabase Auth User object
             communityFund: JSON.parse(localStorage.getItem('sys_survival_fund')) || {
                 totalRaised: 3840,
                 target: 5000,
@@ -937,16 +993,140 @@ alter publication supabase_realtime add table emergencies;</textarea>
             startSimFeed();
         });
 
-        // SUPABASE REALTIME ENGINE INIT FOR 'emergencies' TABLE
+        // SUPABASE REALTIME & AUTH ENGINE INIT
         function initSupabaseEngine() {
             if (typeof supabase !== 'undefined') {
                 try {
                     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    
+                    // Listen to Auth State Changes
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        if (session && session.user) {
+                            state.currentUser = session.user;
+                        } else {
+                            state.currentUser = null;
+                        }
+                        updateAuthUI();
+                    });
+
+                    // Check existing session
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                        if (session && session.user) {
+                            state.currentUser = session.user;
+                            updateAuthUI();
+                        }
+                    });
+
                     fetchCasesFromSupabase();
                     subscribeSupabaseRealtime();
                 } catch(e) {
                     console.error("Supabase Init Error:", e);
                 }
+            }
+        }
+
+        // SUPABASE AUTH UTILITIES
+        function toggleAuthModal(show) {
+            const modal = document.getElementById('auth-modal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function switchAuthTab(tab) {
+            state.authTab = tab;
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+            const fieldUser = document.getElementById('field-username');
+            const submitText = document.getElementById('auth-submit-text');
+            const alertBox = document.getElementById('auth-alert');
+
+            alertBox.classList.add('hidden');
+
+            if (tab === 'signup') {
+                tabSignup.className = "flex-1 py-1.5 text-center rounded-lg font-semibold bg-dark-800 text-slate-100";
+                tabLogin.className = "flex-1 py-1.5 text-center rounded-lg text-slate-400 hover:text-slate-200";
+                fieldUser.classList.remove('hidden');
+                submitText.innerText = "REGISTER RESPONDER ACCOUNT";
+            } else {
+                tabLogin.className = "flex-1 py-1.5 text-center rounded-lg font-semibold bg-dark-800 text-slate-100";
+                tabSignup.className = "flex-1 py-1.5 text-center rounded-lg text-slate-400 hover:text-slate-200";
+                fieldUser.classList.add('hidden');
+                submitText.innerText = "SIGN IN TO NETWORK";
+            }
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const username = document.getElementById('auth-username').value.trim();
+            const alertBox = document.getElementById('auth-alert');
+
+            alertBox.classList.add('hidden');
+
+            try {
+                if (state.authTab === 'signup') {
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: { username: username || email.split('@')[0] }
+                        }
+                    });
+                    if (error) throw error;
+                    
+                    alertBox.className = "mb-4 p-3 rounded-xl border border-emerald-800 bg-emerald-950/60 text-emerald-300 font-mono text-xs";
+                    alertBox.innerText = "Registration successful! You are now logged in.";
+                    alertBox.classList.remove('hidden');
+                    AudioSynth.playSuccessSound();
+                    setTimeout(() => toggleAuthModal(false), 1200);
+                } else {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    if (error) throw error;
+
+                    alertBox.className = "mb-4 p-3 rounded-xl border border-emerald-800 bg-emerald-950/60 text-emerald-300 font-mono text-xs";
+                    alertBox.innerText = "Welcome back, Responder!";
+                    alertBox.classList.remove('hidden');
+                    AudioSynth.playSuccessSound();
+                    setTimeout(() => toggleAuthModal(false), 1000);
+                }
+            } catch (err) {
+                alertBox.className = "mb-4 p-3 rounded-xl border border-red-800 bg-red-950/60 text-red-300 font-mono text-xs";
+                alertBox.innerText = err.message || "Authentication failed. Check your credentials.";
+                alertBox.classList.remove('hidden');
+            }
+        }
+
+        async function handleSignOut() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+            }
+            state.currentUser = null;
+            updateAuthUI();
+            AudioSynth.playResolveSound();
+        }
+
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('login-btn');
+            const userPill = document.getElementById('logged-in-user-pill');
+            const userDisplay = document.getElementById('user-display-name');
+
+            if (state.currentUser) {
+                loginBtn.classList.add('hidden');
+                userPill.classList.remove('hidden');
+                
+                const metaName = state.currentUser.user_metadata?.username;
+                const emailName = state.currentUser.email ? state.currentUser.email.split('@')[0] : 'Responder';
+                const displayName = metaName ? '@' + metaName : '@' + emailName;
+
+                userDisplay.innerText = displayName;
+                document.getElementById('crisis-handle').value = displayName;
+            } else {
+                loginBtn.classList.remove('hidden');
+                userPill.classList.add('hidden');
             }
         }
 
@@ -974,7 +1154,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
                     updateMetrics();
                 }
             } catch(e) {
-                console.warn("Notice: Table 'emergencies' fetch warning (create table if first time):", e);
+                console.warn("Table 'emergencies' fetch warning:", e);
             }
         }
 
@@ -1040,7 +1220,6 @@ alter publication supabase_realtime add table emergencies;</textarea>
             alert('Supabase SQL Schema for emergencies copied to clipboard!');
         }
 
-        // SAVE LOCAL BACKUP STATE
         function saveCasesState() {
             localStorage.setItem('sys_survival_cases', JSON.stringify(state.cases));
         }
@@ -1399,13 +1578,15 @@ alter publication supabase_realtime add table emergencies;</textarea>
             const caseObj = state.cases.find(c => c.id === id);
             if (!caseObj) return;
 
+            const responderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402 (You)';
+
             caseObj.status = 'LOCKED';
-            caseObj.handledBy = 'RESP-402 (You)';
+            caseObj.handledBy = responderName;
 
             if (supabaseClient) {
                 supabaseClient.from('emergencies').update({
                     status: 'LOCKED',
-                    handled_by: 'RESP-402 (You)'
+                    handled_by: responderName
                 }).eq('id', id).then(({error}) => { if (error) console.warn("Supabase update error:", error); });
             }
 
@@ -1482,8 +1663,10 @@ alter publication supabase_realtime add table emergencies;</textarea>
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
             if (!caseObj) return;
 
+            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402';
+
             caseObj.messages.push({
-                sender: 'RESP-402',
+                sender: senderName,
                 text: text,
                 time: 'Just now',
                 isResponder: true
@@ -1528,6 +1711,8 @@ alter publication supabase_realtime add table emergencies;</textarea>
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
             if (!caseObj) return;
 
+            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402';
+
             let scriptText = "";
             if (type === 'deescalate') {
                 scriptText = "⚡ RESPONDER TRIAGE: You are in an immediate high-stress state. Step 1: Pause all immediate decisions. Step 2: Do not sign any document or agree to verbal terms right now. I am reviewing your case parameters now.";
@@ -1538,7 +1723,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
             }
 
             caseObj.messages.push({
-                sender: 'RESP-402 [TOOLKIT]',
+                sender: senderName + ' [TOOLKIT]',
                 text: scriptText,
                 time: 'Just now',
                 isResponder: true
@@ -1583,7 +1768,7 @@ alter publication supabase_realtime add table emergencies;</textarea>
             closeCaseRoom();
         }
 
-        // SUBMIT EMERGENCY ALERT FORM - DIRECT WRITING TO SUPABASE 'emergencies' TABLE
+        // SUBMIT EMERGENCY ALERT FORM
         async function submitEmergencyAlert(e) {
             e.preventDefault();
             const category = document.querySelector('input[name="category"]:checked').value;
