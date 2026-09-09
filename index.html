@@ -99,7 +99,7 @@
                 <div>
                     <div class="flex items-center space-x-2">
                         <span class="font-mono font-bold tracking-wider text-slate-100 text-sm sm:text-base">SYSTEM SURVIVAL</span>
-                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800/50 uppercase tracking-widest font-semibold">Live Triage</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800/50 uppercase tracking-widest font-semibold">Live Network</span>
                     </div>
                     <p class="text-xs text-slate-400 font-mono hidden sm:block">Raw Real-Talk Crisis & Response Infrastructure</p>
                 </div>
@@ -111,7 +111,7 @@
                     <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i>
                     <span>Command Stream</span>
                 </button>
-                <button id="mode-crisis-btn" onclick="setMode('crisis')" class="flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-slate-200 transition-all duration-200">
+                <button id="mode-crisis-btn" onclick="triggerEmergencyModeAction()" class="flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-slate-200 transition-all duration-200">
                     <i data-lucide="siren" class="w-3.5 h-3.5 text-red-400"></i>
                     <span>Trigger Emergency</span>
                 </button>
@@ -120,17 +120,11 @@
             <!-- Right Controls -->
             <div class="flex items-center space-x-2 sm:space-x-2.5">
                 
-                <!-- SUPABASE DATABASE STATUS BUTTON -->
-                <button onclick="toggleDbModal(true)" id="db-status-btn" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-xs text-emerald-300 transition-colors font-mono">
-                    <span id="db-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span id="db-status-text" class="hidden xl:inline text-[11px] font-bold">Supabase: Live</span>
-                </button>
-
                 <!-- DONATION / SUPPORT BUTTON IN HEADER -->
-                <button onclick="toggleDonationModal(true)" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/60 text-xs text-emerald-300 transition-all font-mono font-medium shadow-sm">
+                <button onclick="toggleDonationModal(true)" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/60 text-xs text-emerald-300 transition-all font-mono font-medium shadow-sm">
                     <i data-lucide="heart-handshake" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span class="hidden sm:inline">Support</span>
+                    <span class="hidden sm:inline">Support Network</span>
+                    <span class="sm:hidden">Support</span>
                 </button>
 
                 <!-- Audio Toggle -->
@@ -148,25 +142,25 @@
                     <!-- Notification Dropdown -->
                     <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-dark-900 border border-dark-border rounded-xl shadow-2xl z-50 overflow-hidden">
                         <div class="p-3 bg-dark-850 border-b border-dark-border flex justify-between items-center">
-                            <span class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">Live Network Stream Logs</span>
+                            <span class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">Live Network Logs</span>
                             <button onclick="clearNotifs()" class="text-[11px] text-slate-400 hover:text-slate-200">Clear</button>
                         </div>
                         <div id="notif-list" class="max-h-64 overflow-y-auto divide-y divide-dark-border">
-                            <!-- Items inserted dynamically -->
+                            <!-- Dynamic logs -->
                         </div>
                     </div>
                 </div>
 
-                <!-- USER SUPABASE AUTH PILL / LOGIN BUTTON -->
+                <!-- USER AUTH HEADER PILL -->
                 <div id="auth-header-container">
-                    <button onclick="toggleAuthModal(true)" id="login-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800/60 text-xs font-mono text-indigo-300 font-bold transition-all shadow-sm">
+                    <button onclick="toggleAuthModal(true)" id="login-btn" class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-bold text-xs transition-all shadow-md">
                         <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
                         <span>Login / Sign Up</span>
                     </button>
                     
-                    <div id="logged-in-user-pill" class="hidden flex items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-2.5 pr-1.5 py-1">
-                        <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                        <span id="user-display-name" class="text-xs font-mono text-slate-200 font-medium max-w-[110px] truncate">@Responder</span>
+                    <div id="logged-in-user-pill" class="hidden flex items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-3 pr-1.5 py-1">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                        <span id="user-display-name" class="text-xs font-mono text-slate-200 font-bold max-w-[120px] truncate">@User</span>
                         <button onclick="handleSignOut()" title="Sign Out" class="p-1 rounded-full text-slate-400 hover:text-red-400 hover:bg-dark-800 transition-colors">
                             <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                         </button>
@@ -183,11 +177,8 @@
             <button id="mobile-mode-responder" onclick="setMode('responder')" class="flex-1 py-1.5 text-center text-xs font-medium rounded-md bg-dark-800 text-slate-100 border border-slate-700">
                 Command Feed
             </button>
-            <button id="mobile-mode-crisis" onclick="setMode('crisis')" class="flex-1 py-1.5 text-center text-xs font-medium rounded-md text-slate-400 bg-dark-950 border border-dark-border">
+            <button id="mobile-mode-crisis" onclick="triggerEmergencyModeAction()" class="flex-1 py-1.5 text-center text-xs font-medium rounded-md text-slate-400 bg-dark-950 border border-dark-border">
                 Trigger Emergency
-            </button>
-            <button onclick="toggleAuthModal(true)" class="p-1.5 text-indigo-400 bg-dark-850 border border-dark-border rounded-md">
-                <i data-lucide="user" class="w-4 h-4"></i>
             </button>
             <button onclick="toggleDonationModal(true)" class="p-1.5 text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 rounded-md">
                 <i data-lucide="heart-handshake" class="w-4 h-4"></i>
@@ -253,7 +244,7 @@
             </div>
         </section>
 
-        <!-- EMERGENCY TRIGGER SECTION (VISIBLE IN CRISIS MODE) -->
+        <!-- EMERGENCY TRIGGER SECTION (REQUIRE LOGIN FOR DISPATCH) -->
         <section id="crisis-trigger-section" class="hidden bg-dark-900 border border-red-900/40 rounded-2xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/5 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -263,10 +254,21 @@
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
                         <h2 class="text-lg sm:text-xl font-mono font-bold text-white uppercase tracking-wider">Emergency Dispatcher</h2>
                     </div>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Facing illegal firing, debt panic, sudden breakdown, or physical isolation? Broadcast your emergency directly to verified network responders instantly. Zero filler.</p>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Facing illegal firing, debt panic, sudden breakdown, or physical isolation? Broadcast your emergency directly to verified network responders instantly.</p>
                 </div>
                 <button onclick="setMode('responder')" class="text-xs font-mono text-slate-400 hover:text-slate-200 bg-dark-850 px-3 py-1.5 rounded-lg border border-dark-border">
                     Back to Feed &rarr;
+                </button>
+            </div>
+
+            <!-- Login Requirement Warning Banner -->
+            <div id="dispatch-login-warning" class="hidden mb-6 p-4 rounded-xl border border-amber-800/60 bg-amber-950/40 text-amber-300 font-mono text-xs flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span>Authentication Required: Please log in or register an account to dispatch emergency alerts.</span>
+                </div>
+                <button onclick="toggleAuthModal(true)" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs">
+                    Sign In Now
                 </button>
             </div>
 
@@ -314,7 +316,7 @@
                     </div>
                 </div>
 
-                <!-- Urgency Tiers & Handle Customizer -->
+                <!-- Urgency Tiers & Masked Handle -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">2. Urgency Rating</label>
@@ -335,12 +337,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">3. Anonymous Masked Handle</label>
+                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">3. Masked Dispatcher Handle</label>
                         <div class="flex space-x-2">
-                            <input type="text" id="crisis-handle" value="@Ghost-4902" class="flex-1 bg-dark-950 border border-dark-border rounded-lg px-3 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
-                            <button type="button" onclick="randomizeHandle()" class="px-3 py-1.5 bg-dark-850 hover:bg-dark-800 border border-dark-border text-xs text-slate-300 rounded-lg font-mono">
-                                Randomize
-                            </button>
+                            <input type="text" id="crisis-handle" value="@Anon-User" readonly class="flex-1 bg-dark-950 border border-dark-border rounded-lg px-3 py-1.5 text-xs font-mono text-slate-200 focus:outline-none">
                         </div>
                     </div>
                 </div>
@@ -411,33 +410,13 @@
 
                 <!-- LIVE STREAM FEED CARDS GRID -->
                 <div id="cases-container" class="grid grid-cols-1 gap-4">
-                    <!-- Case cards rendered via JS -->
+                    <!-- Dynamic Stream Cards from Supabase -->
                 </div>
 
             </section>
 
             <!-- DEDICATED FUNDING & WALL OF SUPPORTERS SIDEBAR -->
             <aside class="flex flex-col gap-5">
-                
-                <!-- SUPABASE REALTIME DB CONNECTOR WIDGET -->
-                <div class="bg-dark-900 border border-emerald-900/40 rounded-2xl p-5 shadow-xl">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
-                            <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Supabase Cloud Active</h3>
-                        </div>
-                        <span id="db-widget-badge" class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Live Sync</span>
-                    </div>
-
-                    <p class="text-xs text-slate-400 leading-relaxed font-sans mb-3">
-                        Tables <code class="text-emerald-300 font-mono text-[11px]">emergencies</code> &amp; <code class="text-emerald-300 font-mono text-[11px]">supporters</code> syncing live across all users.
-                    </p>
-
-                    <button onclick="toggleDbModal(true)" class="w-full py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-mono text-xs font-bold flex items-center justify-center space-x-2 transition-all">
-                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-                        <span>View DB Schema &amp; SQL</span>
-                    </button>
-                </div>
 
                 <!-- LIVE FUNDING PROGRESS CARD -->
                 <div class="bg-dark-900 border border-emerald-900/40 rounded-2xl p-5 shadow-xl relative overflow-hidden">
@@ -446,11 +425,11 @@
                             <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
                             <h3 class="font-mono font-bold text-xs uppercase tracking-wider text-slate-200">Infrastructure Fund</h3>
                         </div>
-                        <span class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Real Supabase Sync</span>
+                        <span class="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">Community Powered</span>
                     </div>
 
                     <p class="text-xs text-slate-400 leading-relaxed font-sans mb-4">
-                        100% community-supported. Live contributions directly logged to Supabase <code class="text-emerald-300 font-mono">supporters</code> table.
+                        Zero corporate ads, zero data selling. Funded 100% by sovereign individuals keeping emergency triage servers online 24/7.
                     </p>
 
                     <!-- Progress Bar -->
@@ -529,7 +508,7 @@
                 <div class="bg-dark-950/90 px-4 sm:px-6 py-2.5 border-b border-dark-border flex items-center justify-between text-xs font-mono">
                     <div class="flex items-center space-x-2 text-slate-300 overflow-hidden text-ellipsis whitespace-nowrap">
                         <span class="text-slate-500">Core Issue:</span>
-                        <span id="room-issue-brief" class="text-slate-200 truncate">Boss threatening illegal firing in 2 hours...</span>
+                        <span id="room-issue-brief" class="text-slate-200 truncate">Immediate triage session active...</span>
                     </div>
                     <span class="text-emerald-400 flex items-center space-x-1 shrink-0 ml-2">
                         <i data-lucide="lock" class="w-3 h-3"></i>
@@ -585,7 +564,7 @@
                 </div>
                 <div>
                     <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Responder Access</h3>
-                    <p class="text-xs text-indigo-400 font-mono">Supabase Auth Session</p>
+                    <p class="text-xs text-indigo-400 font-mono">Encrypted Triage Authentication</p>
                 </div>
             </div>
 
@@ -599,11 +578,6 @@
             <div id="auth-alert" class="hidden mb-4 p-3 rounded-xl border text-xs font-mono"></div>
 
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4 font-mono text-xs">
-                <div id="field-username" class="hidden">
-                    <label class="block text-slate-300 mb-1">Handle / Username</label>
-                    <input type="text" id="auth-username" placeholder="@Responder-01" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
-                </div>
-
                 <div>
                     <label class="block text-slate-300 mb-1">Email Address</label>
                     <input type="email" id="auth-email" placeholder="responder@survival.net" required class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
@@ -622,64 +596,6 @@
         </div>
     </div>
 
-    <!-- SUPABASE DATABASE CONFIGURATION MODAL -->
-    <div id="db-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
-            <button onclick="toggleDbModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shadow-inner">
-                    <i data-lucide="database" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Supabase Live Connection</h3>
-                    <p class="text-xs text-emerald-400 font-mono">Tables: emergencies &bull; supporters</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-slate-300 mb-4 font-sans leading-relaxed">
-                Connected to Supabase project <code class="text-emerald-400 font-mono">aeijkmwxjtuiqlnmczxv</code>. Realtime subscriptions active for alerts and live supporters.
-            </p>
-
-            <!-- 1-Click SQL Schema Snippet Box -->
-            <div class="bg-dark-950 p-3 rounded-xl border border-dark-border mb-4">
-                <div class="flex items-center justify-between mb-1 text-[11px]">
-                    <span class="text-slate-400">SQL Schema Script for both tables:</span>
-                    <button type="button" onclick="copySqlSchema()" class="text-emerald-400 hover:underline font-mono">Copy SQL</button>
-                </div>
-                <textarea readonly id="sql-schema-box" rows="6" class="w-full bg-dark-900 border border-dark-border rounded p-2 text-[10px] text-slate-400 font-mono resize-none focus:outline-none">-- Table 1: Emergencies
-create table emergencies (
-  id text primary key,
-  handle text,
-  category text,
-  urgency text,
-  description text,
-  timestamp text,
-  status text,
-  handled_by text,
-  messages jsonb default '[]'::jsonb,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-alter publication supabase_realtime add table emergencies;
-
--- Table 2: Supporters
-create table supporters (
-  id text primary key,
-  handle text,
-  amount numeric,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-alter publication supabase_realtime add table supporters;</textarea>
-            </div>
-
-            <button type="button" onclick="toggleDbModal(false)" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase">
-                Close Connection Panel
-            </button>
-        </div>
-    </div>
-
     <!-- STRIPE & PAYPAL LIVE DONATION MODAL -->
     <div id="donation-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
@@ -693,7 +609,7 @@ alter publication supabase_realtime add table supporters;</textarea>
                 </div>
                 <div>
                     <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Keep Emergency Lights On</h3>
-                    <p class="text-xs text-emerald-400 font-mono">Live Stripe &amp; Supabase Logging</p>
+                    <p class="text-xs text-emerald-400 font-mono">Direct Network Infrastructure Fund</p>
                 </div>
             </div>
 
@@ -745,11 +661,10 @@ alter publication supabase_realtime add table supporters;</textarea>
 
                 <div id="pay-details-stripe" class="p-3.5 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono space-y-2">
                     <div class="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Stripe Encrypted Payment</span>
-                        <span class="text-emerald-400 font-bold">pk_live_51Tl5Ne...</span>
+                        <span>Encrypted Card Processing</span>
+                        <span class="text-emerald-400 font-bold">256-Bit SSL Secure</span>
                     </div>
                     <div id="stripe-card-element" class="p-2.5 bg-dark-900 border border-dark-border rounded-lg text-slate-200">
-                        <!-- Stripe Card Element Mount Target -->
                         <input type="text" placeholder="Card: 4242 •••• •••• 4242 | MM/YY | CVC" class="w-full bg-transparent border-0 text-slate-200 focus:outline-none font-mono text-xs">
                     </div>
                 </div>
@@ -869,11 +784,10 @@ alter publication supabase_realtime add table supporters;</textarea>
             }
         };
 
-        // GLOBAL APPLICATION STATE (NO HARDCODED DEMO DONATIONS)
+        // GLOBAL APPLICATION STATE (NO DEMO MULL)
         let state = {
             currentMode: 'responder',
             audioEnabled: true,
-            simEnabled: true,
             activeCategoryFilter: 'ALL',
             activeUrgencyFilter: 'ALL',
             searchQuery: '',
@@ -890,23 +804,12 @@ alter publication supabase_realtime add table supporters;</textarea>
             notifications: []
         };
 
-        const simAlertsPool = [
-            { category: 'System / Work', urgency: 'CRITICAL', text: 'Employer demanding unpaid overnight shift under threat of summary firing. Need immediate legal refusal clause.' },
-            { category: 'Financial / Debt', urgency: 'URGENT', text: 'Payday loan company threatening workplace garnishment without court judgment.' },
-            { category: 'Mental / Breakdown', urgency: 'CRITICAL', text: 'Acute sensory overload panic in parking lot after sudden eviction filing. Need grounding.' },
-            { category: 'Addiction / Loop', urgency: 'URGENT', text: 'Trigger event at work event. Need immediate 5-minute emergency call/script.' },
-            { category: 'Legal / Threat', urgency: 'CRITICAL', text: 'Landlord shut off hot water and lock code without court order.' }
-        ];
-
-        let simInterval = null;
-
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             initStripe();
             initSupabaseEngine();
             setupTextareaCounter();
-            startSimFeed();
         });
 
         function initStripe() {
@@ -917,6 +820,19 @@ alter publication supabase_realtime add table supporters;</textarea>
                     console.warn("Stripe init notice:", e);
                 }
             }
+        }
+
+        // TRIGGER EMERGENCY MODE ACTION WITH LOGIN ENFORCEMENT
+        function triggerEmergencyModeAction() {
+            if (!state.currentUser) {
+                toggleAuthModal(true);
+                const alertBox = document.getElementById('auth-alert');
+                alertBox.className = "mb-4 p-3 rounded-xl border border-amber-800 bg-amber-950/60 text-amber-300 font-mono text-xs";
+                alertBox.innerText = "Authentication Required: Please sign in or register to trigger emergency alerts.";
+                alertBox.classList.remove('hidden');
+                return;
+            }
+            setMode('crisis');
         }
 
         // SUPABASE ENGINE INIT FOR 'emergencies' & 'supporters' TABLES
@@ -1085,11 +1001,12 @@ alter publication supabase_realtime add table supporters;</textarea>
                 .subscribe();
         }
 
-        // DONATION SUBMISSION (REAL STRIPE & PAYPAL & SUPABASE LOGGING)
+        // DONATION SUBMISSION (STRIPE & PAYPAL & SUPABASE LOGGING)
         async function submitContribution(e) {
             e.preventDefault();
             const amt = state.selectedDonationAmount || 15;
-            const alias = document.getElementById('supporter-alias').value.trim() || (state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email.split('@')[0]) : '@Anon-Hero');
+            const derivedHandle = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : '@Anon-Hero';
+            const alias = document.getElementById('supporter-alias').value.trim() || derivedHandle;
             const payMethod = document.querySelector('input[name="paymethod"]:checked').value;
 
             if (payMethod === 'paypal') {
@@ -1135,7 +1052,6 @@ alter publication supabase_realtime add table supporters;</textarea>
             state.authTab = tab;
             const tabLogin = document.getElementById('tab-login');
             const tabSignup = document.getElementById('tab-signup');
-            const fieldUser = document.getElementById('field-username');
             const submitText = document.getElementById('auth-submit-text');
             const alertBox = document.getElementById('auth-alert');
 
@@ -1144,12 +1060,10 @@ alter publication supabase_realtime add table supporters;</textarea>
             if (tab === 'signup') {
                 tabSignup.className = "flex-1 py-1.5 text-center rounded-lg font-semibold bg-dark-800 text-slate-100";
                 tabLogin.className = "flex-1 py-1.5 text-center rounded-lg text-slate-400 hover:text-slate-200";
-                fieldUser.classList.remove('hidden');
                 submitText.innerText = "REGISTER RESPONDER ACCOUNT";
             } else {
                 tabLogin.className = "flex-1 py-1.5 text-center rounded-lg font-semibold bg-dark-800 text-slate-100";
                 tabSignup.className = "flex-1 py-1.5 text-center rounded-lg text-slate-400 hover:text-slate-200";
-                fieldUser.classList.add('hidden');
                 submitText.innerText = "SIGN IN TO NETWORK";
             }
         }
@@ -1158,27 +1072,27 @@ alter publication supabase_realtime add table supporters;</textarea>
             e.preventDefault();
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value.trim();
-            const username = document.getElementById('auth-username').value.trim();
             const alertBox = document.getElementById('auth-alert');
 
             alertBox.classList.add('hidden');
 
             try {
                 if (state.authTab === 'signup') {
+                    const derivedUsername = email.split('@')[0];
                     const { data, error } = await supabaseClient.auth.signUp({
                         email: email,
                         password: password,
                         options: {
-                            data: { username: username || email.split('@')[0] }
+                            data: { username: derivedUsername }
                         }
                     });
                     if (error) throw error;
                     
                     alertBox.className = "mb-4 p-3 rounded-xl border border-emerald-800 bg-emerald-950/60 text-emerald-300 font-mono text-xs";
-                    alertBox.innerText = "Registration successful! You are now logged in.";
+                    alertBox.innerText = "Registration successful! Session active.";
                     alertBox.classList.remove('hidden');
                     AudioSynth.playSuccessSound();
-                    setTimeout(() => toggleAuthModal(false), 1200);
+                    setTimeout(() => toggleAuthModal(false), 1000);
                 } else {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({
                         email: email,
@@ -1205,6 +1119,7 @@ alter publication supabase_realtime add table supporters;</textarea>
             }
             state.currentUser = null;
             updateAuthUI();
+            setMode('responder');
             AudioSynth.playResolveSound();
         }
 
@@ -1212,10 +1127,12 @@ alter publication supabase_realtime add table supporters;</textarea>
             const loginBtn = document.getElementById('login-btn');
             const userPill = document.getElementById('logged-in-user-pill');
             const userDisplay = document.getElementById('user-display-name');
+            const warningBox = document.getElementById('dispatch-login-warning');
 
             if (state.currentUser) {
                 loginBtn.classList.add('hidden');
                 userPill.classList.remove('hidden');
+                warningBox.classList.add('hidden');
                 
                 const metaName = state.currentUser.user_metadata?.username;
                 const emailName = state.currentUser.email ? state.currentUser.email.split('@')[0] : 'Responder';
@@ -1226,20 +1143,84 @@ alter publication supabase_realtime add table supporters;</textarea>
             } else {
                 loginBtn.classList.remove('hidden');
                 userPill.classList.add('hidden');
+                warningBox.classList.remove('hidden');
+                document.getElementById('crisis-handle').value = '@Anon-User';
             }
         }
 
-        function toggleDbModal(show) {
-            const modal = document.getElementById('db-modal');
-            if (show) modal.classList.remove('hidden');
-            else modal.classList.add('hidden');
-        }
+        // SUBMIT EMERGENCY ALERT FORM WITH STRICT AUTH CHECK
+        async function submitEmergencyAlert(e) {
+            e.preventDefault();
 
-        function copySqlSchema() {
-            const box = document.getElementById('sql-schema-box');
-            navigator.clipboard.writeText(box.value);
-            AudioSynth.playSuccessSound();
-            alert('Supabase SQL Schema script copied to clipboard!');
+            // STRICT AUTH CHECK ENFORCEMENT
+            if (!state.currentUser) {
+                toggleAuthModal(true);
+                const alertBox = document.getElementById('auth-alert');
+                alertBox.className = "mb-4 p-3 rounded-xl border border-amber-800 bg-amber-950/60 text-amber-300 font-mono text-xs";
+                alertBox.innerText = "Authentication Required: Please sign in or register to dispatch an emergency alert.";
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const urgency = document.querySelector('input[name="urgency"]:checked').value;
+            const derivedHandle = state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0];
+            const description = document.getElementById('crisis-description').value.trim();
+
+            if (!description) return;
+
+            const newId = 'SYS-' + Math.floor(1000 + Math.random() * 9000);
+            const newCase = {
+                id: newId,
+                handle: derivedHandle,
+                category: category,
+                urgency: urgency,
+                description: description,
+                timestamp: 'Just now',
+                status: 'OPEN',
+                handledBy: null,
+                messages: [
+                    { sender: derivedHandle, text: description, time: 'Just now', isResponder: false }
+                ]
+            };
+
+            if (!state.cases.some(c => c.id === newId)) {
+                state.cases.unshift(newCase);
+            }
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('emergencies').insert({
+                        id: newCase.id,
+                        handle: newCase.handle,
+                        category: newCase.category,
+                        urgency: newCase.urgency,
+                        description: newCase.description,
+                        timestamp: 'Just now',
+                        status: 'OPEN',
+                        handled_by: null,
+                        messages: newCase.messages
+                    });
+                } catch (err) {
+                    console.warn("Supabase insert error:", err);
+                }
+            }
+
+            state.notifications.unshift({
+                id: Date.now(),
+                title: `Emergency Broadcast (${category})`,
+                desc: `Case #${newId} dispatched`,
+                time: 'Just now'
+            });
+
+            AudioSynth.playAlertSound();
+            document.getElementById('emergency-form').reset();
+            setupTextareaCounter();
+            
+            setMode('responder');
+            renderCases();
+            updateMetrics();
+            renderNotifications();
         }
 
         function setMode(mode) {
@@ -1286,75 +1267,6 @@ alter publication supabase_realtime add table supporters;</textarea>
                 btn.className = "p-2 rounded-lg bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-500 transition-colors";
             }
             lucide.createIcons();
-        }
-
-        function toggleSimulation() {
-            state.simEnabled = !state.simEnabled;
-            const dot = document.getElementById('sim-dot');
-            const text = document.getElementById('sim-text');
-            if (state.simEnabled) {
-                dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                text.innerText = "ON";
-                text.className = "font-mono text-xs font-semibold text-emerald-400";
-                startSimFeed();
-            } else {
-                dot.className = "w-2 h-2 rounded-full bg-slate-600";
-                text.innerText = "PAUSED";
-                text.className = "font-mono text-xs font-semibold text-slate-500";
-                clearInterval(simInterval);
-            }
-        }
-
-        function startSimFeed() {
-            clearInterval(simInterval);
-            if (!state.simEnabled) return;
-            simInterval = setInterval(() => {
-                const randomSample = simAlertsPool[Math.floor(Math.random() * simAlertsPool.length)];
-                const randomId = 'SYS-' + Math.floor(1000 + Math.random() * 9000);
-                const randomHandle = '@Ghost-' + Math.floor(1000 + Math.random() * 9000);
-
-                const newCase = {
-                    id: randomId,
-                    handle: randomHandle,
-                    category: randomSample.category,
-                    urgency: randomSample.urgency,
-                    description: randomSample.text,
-                    timestamp: 'Just now',
-                    status: 'OPEN',
-                    handledBy: null,
-                    messages: [
-                        { sender: randomHandle, text: randomSample.text, time: 'Just now', isResponder: false }
-                    ]
-                };
-
-                state.cases.unshift(newCase);
-
-                if (supabaseClient) {
-                    supabaseClient.from('emergencies').insert({
-                        id: newCase.id,
-                        handle: newCase.handle,
-                        category: newCase.category,
-                        urgency: newCase.urgency,
-                        description: newCase.description,
-                        timestamp: 'Just now',
-                        status: 'OPEN',
-                        handled_by: null,
-                        messages: newCase.messages
-                    }).then(({error}) => { if (error) console.warn("Supabase insert sim error:", error); });
-                }
-
-                state.notifications.unshift({
-                    id: Date.now(),
-                    title: `Stream Alert (${randomSample.category})`,
-                    desc: `Case #${randomId} triggered`,
-                    time: 'Just now'
-                });
-
-                AudioSynth.playAlertSound();
-                renderCases();
-                updateMetrics();
-                renderNotifications();
-            }, 25000);
         }
 
         function setCategoryFilter(cat) {
@@ -1506,7 +1418,7 @@ alter publication supabase_realtime add table supporters;</textarea>
                             <p class="text-[10px] text-slate-500 font-mono">${s.time}</p>
                         </div>
                     </div>
-                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">Verified Supabase</span>
+                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">Verified Donor</span>
                 </div>
             `).join('');
         }
@@ -1552,10 +1464,19 @@ alter publication supabase_realtime add table supporters;</textarea>
         }
 
         function acceptCase(id) {
+            if (!state.currentUser) {
+                toggleAuthModal(true);
+                const alertBox = document.getElementById('auth-alert');
+                alertBox.className = "mb-4 p-3 rounded-xl border border-amber-800 bg-amber-950/60 text-amber-300 font-mono text-xs";
+                alertBox.innerText = "Authentication Required: Please sign in or register to accept emergency cases.";
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
             const caseObj = state.cases.find(c => c.id === id);
             if (!caseObj) return;
 
-            const responderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402 (You)';
+            const responderName = state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0];
 
             caseObj.status = 'LOCKED';
             caseObj.handledBy = responderName;
@@ -1637,7 +1558,7 @@ alter publication supabase_realtime add table supporters;</textarea>
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
             if (!caseObj) return;
 
-            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402';
+            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : 'RESP-402';
 
             caseObj.messages.push({
                 sender: senderName,
@@ -1655,26 +1576,6 @@ alter publication supabase_realtime add table supporters;</textarea>
             input.value = '';
             AudioSynth.playSuccessSound();
             renderRoomMessages(caseObj);
-
-            setTimeout(() => {
-                if (state.activeRoomId === caseObj.id && caseObj.status !== 'RESOLVED') {
-                    caseObj.messages.push({
-                        sender: caseObj.handle,
-                        text: 'Understood. Thank you for staying on this channel with me.',
-                        time: 'Just now',
-                        isResponder: false
-                    });
-
-                    if (supabaseClient) {
-                        supabaseClient.from('emergencies').update({
-                            messages: caseObj.messages
-                        }).eq('id', caseObj.id).then(({error}) => { if (error) console.warn("Supabase reply update error:", error); });
-                    }
-
-                    AudioSynth.playAlertSound();
-                    renderRoomMessages(caseObj);
-                }
-            }, 3000);
         }
 
         function sendToolkitTemplate(type) {
@@ -1682,7 +1583,7 @@ alter publication supabase_realtime add table supporters;</textarea>
             const caseObj = state.cases.find(c => c.id === state.activeRoomId);
             if (!caseObj) return;
 
-            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : state.currentUser.email) : 'RESP-402';
+            const senderName = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : 'RESP-402';
 
             let scriptText = "";
             if (type === 'deescalate') {
@@ -1734,69 +1635,6 @@ alter publication supabase_realtime add table supporters;</textarea>
             renderCases();
             updateMetrics();
             closeCaseRoom();
-        }
-
-        async function submitEmergencyAlert(e) {
-            e.preventDefault();
-            const category = document.querySelector('input[name="category"]:checked').value;
-            const urgency = document.querySelector('input[name="urgency"]:checked').value;
-            const handle = document.getElementById('crisis-handle').value.trim() || '@Ghost-0000';
-            const description = document.getElementById('crisis-description').value.trim();
-
-            if (!description) return;
-
-            const newId = 'SYS-' + Math.floor(1000 + Math.random() * 9000);
-            const newCase = {
-                id: newId,
-                handle: handle,
-                category: category,
-                urgency: urgency,
-                description: description,
-                timestamp: 'Just now',
-                status: 'OPEN',
-                handledBy: null,
-                messages: [
-                    { sender: handle, text: description, time: 'Just now', isResponder: false }
-                ]
-            };
-
-            if (!state.cases.some(c => c.id === newId)) {
-                state.cases.unshift(newCase);
-            }
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('emergencies').insert({
-                        id: newCase.id,
-                        handle: newCase.handle,
-                        category: newCase.category,
-                        urgency: newCase.urgency,
-                        description: newCase.description,
-                        timestamp: 'Just now',
-                        status: 'OPEN',
-                        handled_by: null,
-                        messages: newCase.messages
-                    });
-                } catch (err) {
-                    console.warn("Supabase insert error:", err);
-                }
-            }
-
-            state.notifications.unshift({
-                id: Date.now(),
-                title: `Emergency Broadcast (${category})`,
-                desc: `Case #${newId} dispatched`,
-                time: 'Just now'
-            });
-
-            AudioSynth.playAlertSound();
-            document.getElementById('emergency-form').reset();
-            setupTextareaCounter();
-            
-            setMode('responder');
-            renderCases();
-            updateMetrics();
-            renderNotifications();
         }
 
         function randomizeHandle() {
