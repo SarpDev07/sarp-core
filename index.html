@@ -151,10 +151,10 @@
                         <span>Login / Sign Up</span>
                     </button>
                     
-                    <div id="logged-in-user-pill" class="hidden flex items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-3 pr-1.5 py-1">
+                    <div id="logged-in-user-pill" class="hidden items-center space-x-2 bg-dark-850 border border-dark-border rounded-full pl-3 pr-1.5 py-1 shadow-sm">
                         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                        <span id="user-display-name" class="text-xs font-mono text-slate-200 font-bold max-w-[120px] truncate">@User</span>
-                        <button onclick="handleSignOut()" title="Sign Out" class="p-1 rounded-full text-slate-400 hover:text-red-400 hover:bg-dark-800 transition-colors">
+                        <span id="user-display-name" class="text-xs font-mono text-slate-200 font-bold max-w-[120px] sm:max-w-[160px] truncate">@User</span>
+                        <button onclick="handleSignOut()" title="Sign Out" class="p-1 rounded-full text-slate-400 hover:text-red-400 hover:bg-dark-800 transition-colors flex items-center justify-center">
                             <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
@@ -707,7 +707,7 @@
     <script>
         // SUPABASE REALTIME & STRIPE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTUwNTYsImV4cCI6MjEwNDQzMTA1Nn0.9K9jxjQqZmfutsDNbx5htcJQ7GAJBszS7Uze_2lm6v0';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1zenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
         const STRIPE_PUBLIC_KEY = 'pk_live_51Tl5NeLVzJUGS1L3e0gsOK4iefHhbwSSscnu934zmN59yDC29LfRpwkEOizIwc0AL2D0Q0yacv1LKfF3CKntKaVZ00fETnSHCI';
 
         let supabaseClient = null;
@@ -799,6 +799,7 @@
             lucide.createIcons();
             initStripe();
             initSupabaseEngine();
+            updateAuthUI();
             setupTextareaCounter();
         });
 
@@ -844,8 +845,10 @@
                     supabaseClient.auth.getSession().then(({ data: { session } }) => {
                         if (session && session.user) {
                             state.currentUser = session.user;
-                            updateAuthUI();
+                        } else {
+                            state.currentUser = null;
                         }
+                        updateAuthUI();
                     });
 
                     fetchCasesFromSupabase();
@@ -1078,11 +1081,16 @@
                     });
                     if (error) throw error;
                     
+                    if (data && data.user) {
+                        state.currentUser = data.user;
+                        updateAuthUI();
+                    }
+
                     alertBox.className = "mb-4 p-3 rounded-xl border border-emerald-800 bg-emerald-950/60 text-emerald-300 font-mono text-xs";
                     alertBox.innerText = "Registration successful! Session active.";
                     alertBox.classList.remove('hidden');
                     AudioSynth.playSuccessSound();
-                    setTimeout(() => toggleAuthModal(false), 1000);
+                    setTimeout(() => toggleAuthModal(false), 800);
                 } else {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({
                         email: email,
@@ -1090,11 +1098,16 @@
                     });
                     if (error) throw error;
 
+                    if (data && data.user) {
+                        state.currentUser = data.user;
+                        updateAuthUI();
+                    }
+
                     alertBox.className = "mb-4 p-3 rounded-xl border border-emerald-800 bg-emerald-950/60 text-emerald-300 font-mono text-xs";
                     alertBox.innerText = "Welcome back, Responder!";
                     alertBox.classList.remove('hidden');
                     AudioSynth.playSuccessSound();
-                    setTimeout(() => toggleAuthModal(false), 1000);
+                    setTimeout(() => toggleAuthModal(false), 800);
                 }
             } catch (err) {
                 alertBox.className = "mb-4 p-3 rounded-xl border border-red-800 bg-red-950/60 text-red-300 font-mono text-xs";
@@ -1120,22 +1133,31 @@
             const warningBox = document.getElementById('dispatch-login-warning');
 
             if (state.currentUser) {
-                loginBtn.classList.add('hidden');
-                userPill.classList.remove('hidden');
-                warningBox.classList.add('hidden');
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (userPill) {
+                    userPill.classList.remove('hidden');
+                    userPill.classList.add('flex');
+                }
+                if (warningBox) warningBox.classList.add('hidden');
                 
                 const metaName = state.currentUser.user_metadata?.username;
                 const emailName = state.currentUser.email ? state.currentUser.email.split('@')[0] : 'Responder';
                 const displayName = metaName ? '@' + metaName : '@' + emailName;
 
-                userDisplay.innerText = displayName;
-                document.getElementById('crisis-handle').value = displayName;
+                if (userDisplay) userDisplay.innerText = displayName;
+                const crisisHandleInput = document.getElementById('crisis-handle');
+                if (crisisHandleInput) crisisHandleInput.value = displayName;
             } else {
-                loginBtn.classList.remove('hidden');
-                userPill.classList.add('hidden');
-                warningBox.classList.remove('hidden');
-                document.getElementById('crisis-handle').value = '@Anon-User';
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (userPill) {
+                    userPill.classList.add('hidden');
+                    userPill.classList.remove('flex');
+                }
+                if (warningBox) warningBox.classList.remove('hidden');
+                const crisisHandleInput = document.getElementById('crisis-handle');
+                if (crisisHandleInput) crisisHandleInput.value = '@Anon-User';
             }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         // SUBMIT EMERGENCY ALERT FORM WITH STRICT AUTH CHECK
