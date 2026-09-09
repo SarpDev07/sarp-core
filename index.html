@@ -707,7 +707,7 @@
     <script>
         // SUPABASE REALTIME & STRIPE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1zenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTUwNTYsImV4cCI6MjEwNDQzMTA1Nn0.9K9jxjQqZmfutsDNbx5htcJQ7GAJBszS7Uze_2lm6v0';
         const STRIPE_PUBLIC_KEY = 'pk_live_51Tl5NeLVzJUGS1L3e0gsOK4iefHhbwSSscnu934zmN59yDC29LfRpwkEOizIwc0AL2D0Q0yacv1LKfF3CKntKaVZ00fETnSHCI';
 
         let supabaseClient = null;
@@ -826,51 +826,72 @@
             setMode('crisis');
         }
 
-        // SUPABASE ENGINE INIT FOR 'emergencies' & 'supporters' TABLES
+        // SUPABASE ENGINE INIT FOR 'emergencies' & 'supporters' TABLES WITH SDK RETRY
         function initSupabaseEngine() {
-            if (typeof supabase !== 'undefined') {
-                try {
+            if (typeof supabase === 'undefined') {
+                console.warn("⚠️ [Supabase SDK Notice] Waiting for @supabase/supabase-js CDN script to load... Retrying in 150ms.");
+                setTimeout(initSupabaseEngine, 150);
+                return;
+            }
+
+            try {
+                if (!supabaseClient) {
                     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    
-                    // Auth state listener
-                    supabaseClient.auth.onAuthStateChange((event, session) => {
-                        if (session && session.user) {
-                            state.currentUser = session.user;
-                        } else {
-                            state.currentUser = null;
-                        }
-                        updateAuthUI();
-                    });
-
-                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                        if (session && session.user) {
-                            state.currentUser = session.user;
-                        } else {
-                            state.currentUser = null;
-                        }
-                        updateAuthUI();
-                    });
-
-                    fetchCasesFromSupabase();
-                    fetchSupportersFromSupabase();
-                    subscribeSupabaseRealtime();
-                    subscribeSupportersRealtime();
-                } catch(e) {
-                    console.error("Supabase Init Error:", e);
+                    console.log("✅ [Supabase Client Created Successfully] Connected to:", SUPABASE_URL);
                 }
+                
+                // Auth state listener
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    console.log("🔑 [Supabase Auth Event]:", event, session ? session.user.email : 'No active session');
+                    if (session && session.user) {
+                        state.currentUser = session.user;
+                    } else {
+                        state.currentUser = null;
+                    }
+                    updateAuthUI();
+                });
+
+                supabaseClient.auth.getSession().then(({ data: { session }, error }) => {
+                    if (error) console.error("❌ [Supabase Session Error]:", error);
+                    if (session && session.user) {
+                        state.currentUser = session.user;
+                    } else {
+                        state.currentUser = null;
+                    }
+                    updateAuthUI();
+                });
+
+                fetchCasesFromSupabase();
+                fetchSupportersFromSupabase();
+                subscribeSupabaseRealtime();
+                subscribeSupportersRealtime();
+            } catch(e) {
+                console.error("❌ [Supabase Init Exception]:", e);
             }
         }
 
         async function fetchCasesFromSupabase() {
-            if (!supabaseClient) return;
+            console.log("🔍 [Supabase Fetch] Initiating SELECT * on 'emergencies' table...");
+            if (!supabaseClient) {
+                console.error("❌ [Supabase Fetch Failed] supabaseClient is not initialized yet!");
+                return;
+            }
             try {
-                const { data, error } = await supabaseClient
+                let { data, error } = await supabaseClient
                     .from('emergencies')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
+                // Fallback if created_at column is missing in user's table schema
+                if (error && (error.code === '42703' || (error.message && error.message.includes('created_at')))) {
+                    console.warn("⚠️ [Supabase Sort Notice] 'created_at' column missing in schema, falling back to unfiltered SELECT *");
+                    const res = await supabaseClient.from('emergencies').select('*');
+                    data = res.data;
+                    error = res.error;
+                }
+                
                 if (error) {
-                    console.error("❌ [Supabase Select Error] Failed to fetch 'emergencies':", error.message || error, error);
+                    console.error("❌ [Supabase Select Error] Query on 'emergencies' failed:", error.message || error, error);
                     if (error.code === '42501' || (error.message && error.message.toLowerCase().includes('policy'))) {
                         console.warn("⚠️ [Supabase RLS Alert] Row Level Security blocked SELECT on 'emergencies'. Run SQL in Supabase Dashboard:");
                         console.warn("   CREATE POLICY \"Allow public read emergencies\" ON public.emergencies FOR SELECT USING (true);");
@@ -879,6 +900,7 @@
                 }
 
                 if (data) {
+                    console.log(`✅ [Supabase Select Success] Fetched ${data.length} emergency case(s) from database:`, data);
                     state.cases = data.map(d => ({
                         id: d.id,
                         handle: d.handle,
@@ -892,7 +914,8 @@
                     }));
                     renderCases();
                     updateMetrics();
-                    console.log(`✅ [Supabase Sync] Fetched ${data.length} emergency cases from DB.`);
+                } else {
+                    console.warn("⚠️ [Supabase Fetch Notice] Data response is empty/null.");
                 }
             } catch(e) {
                 console.error("❌ [Supabase Fetch Exception]:", e);
@@ -902,10 +925,16 @@
         async function fetchSupportersFromSupabase() {
             if (!supabaseClient) return;
             try {
-                const { data, error } = await supabaseClient
+                let { data, error } = await supabaseClient
                     .from('supporters')
                     .select('*')
                     .order('created_at', { ascending: false });
+                
+                if (error && (error.code === '42703' || (error.message && error.message.includes('created_at')))) {
+                    const res = await supabaseClient.from('supporters').select('*');
+                    data = res.data;
+                    error = res.error;
+                }
                 
                 if (error) {
                     console.error("❌ [Supabase Select Error] Failed to fetch 'supporters':", error.message || error, error);
@@ -934,6 +963,7 @@
             supabaseClient
                 .channel('public:emergencies')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'emergencies' }, payload => {
+                    console.log("⚡ [Supabase Realtime Event Received]:", payload.eventType, payload.new);
                     if (payload.eventType === 'INSERT') {
                         const d = payload.new;
                         const newCase = {
@@ -975,7 +1005,9 @@
                         }
                     }
                 })
-                .subscribe();
+                .subscribe((status) => {
+                    console.log("⚡ [Supabase Realtime Emergencies Channel Status]:", status);
+                });
         }
 
         function subscribeSupportersRealtime() {
