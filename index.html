@@ -683,7 +683,7 @@
     <script>
         // SUPABASE REALTIME & STRIPE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTUwNTYsImV4cCI6MjEwNDQzMTA1Nn0.9K9jxjQqZmfutsDNbx5htcJQ7GAJBszS7Uze_2lm6v0';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1zenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
         const STRIPE_PUBLIC_KEY = 'pk_live_51Tl5NeLVzJUGS1L3e0gsOK4iefHhbwSSscnu934zmN59yDC29LfRpwkEOizIwc0AL2D0Q0yacv1LKfF3CKntKaVZ00fETnSHCI';
 
         let supabaseClient = null;
@@ -841,6 +841,7 @@
                 fetchSupportersFromSupabase();
                 subscribeSupabaseRealtime();
                 subscribeSupportersRealtime();
+                checkStripeSuccessReturn();
             } catch(e) {
                 console.error("❌ [Supabase Init Exception]:", e);
             }
@@ -917,7 +918,7 @@
                     return;
                 }
 
-                if (data) {
+                if (data && data.length > 0) {
                     state.communityFund.supporters = data.map(d => ({
                         id: d.id,
                         handle: d.handle || '@Anon-Hero',
@@ -925,10 +926,16 @@
                         time: d.created_at ? new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'
                     }));
                     state.communityFund.totalRaised = state.communityFund.supporters.reduce((sum, s) => sum + s.amount, 0);
-                    updateMetrics();
-                    renderSupportersWall();
-                    console.log(`✅ [Supabase Sync] Fetched ${data.length} supporters from DB.`);
+                    console.log(`✅ [Supabase Sync] Fetched ${data.length} supporters from DB. Total Raised: $${state.communityFund.totalRaised}`);
+                } else {
+                    // Reset cleanly to 0 when table is empty or cleared
+                    state.communityFund.supporters = [];
+                    state.communityFund.totalRaised = 0;
+                    console.log("ℹ️ [Supabase Sync] Supporters table is empty. Fund reset to $0.");
                 }
+
+                updateMetrics();
+                renderSupportersWall();
             } catch(e) {
                 console.error("❌ [Supabase Supporters Fetch Exception]:", e);
             }
@@ -991,6 +998,7 @@
             supabaseClient
                 .channel('public:supporters')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'supporters' }, payload => {
+                    console.log("⚡ [Supabase Realtime Supporters Event]:", payload.eventType);
                     if (payload.eventType === 'INSERT') {
                         const d = payload.new;
                         const newSupporter = {
@@ -1013,45 +1021,61 @@
                             });
                             renderNotifications();
                         }
+                    } else if (payload.eventType === 'DELETE' || payload.eventType === 'TRUNCATE') {
+                        fetchSupportersFromSupabase();
                     }
                 })
                 .subscribe();
         }
 
-        // STRIPE DONATION CLICK & SUPABASE LOGGING (THE NEST SUPPORTER - 5 CHF / $6.18 USD)
-        async function handleStripeButtonClick(e) {
-            const amtUSD = 6.18; // 5 CHF ~ $6.18 USD
+        // STRIPE BUTTON CLICK: Save pending handle & open Stripe Checkout without pre-payment DB insert
+        function handleStripeButtonClick(e) {
             const derivedHandle = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : '@Anon-Hero';
             const alias = document.getElementById('supporter-alias').value.trim() || derivedHandle;
 
-            const newId = 'SUP-' + Date.now();
+            // Store pending handle for verification on return
+            localStorage.setItem('pending_supporter_handle', alias);
+            console.log("💳 [Stripe Button Clicked] Saved pending supporter handle:", alias);
 
-            if (supabaseClient) {
-                const { error } = await supabaseClient.from('supporters').insert({
-                    id: newId,
-                    handle: alias,
-                    amount: amtUSD
-                });
-                if (error) {
-                    console.error("❌ [Supabase Supporters Insert Error]:", error.message || error, error);
-                } else {
-                    console.log("✅ [Supabase Contribution Logged] Donor:", alias, "Amount: 5 CHF (~$6.18 USD)");
-                    await fetchSupportersFromSupabase();
+            setTimeout(() => toggleDonationModal(false), 300);
+        }
+
+        // STRIPE RETURN SUCCESS VERIFICATION (Triggers ONLY after successful checkout)
+        async function checkStripeSuccessReturn() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success') || urlParams.has('payment_success')) {
+                const handle = localStorage.getItem('pending_supporter_handle') || (state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : '@Anon-Hero');
+                const amtUSD = 6.18; // 5 CHF
+                const newId = 'SUP-' + Date.now();
+
+                console.log("🎉 [Stripe Return Verified] Logging confirmed donation for:", handle);
+
+                if (supabaseClient) {
+                    const { error } = await supabaseClient.from('supporters').insert({
+                        id: newId,
+                        handle: handle,
+                        amount: amtUSD
+                    });
+                    if (error) {
+                        console.error("❌ [Supabase Verified Supporter Insert Error]:", error.message || error, error);
+                    } else {
+                        console.log("✅ [Supabase Verified Supporter Saved]:", handle);
+                        await fetchSupportersFromSupabase();
+                    }
                 }
-            } else {
-                state.communityFund.supporters.unshift({
-                    id: newId,
-                    handle: alias,
-                    amount: amtUSD,
+
+                localStorage.removeItem('pending_supporter_handle');
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+                AudioSynth.playSuccessSound();
+                state.notifications.unshift({
+                    id: Date.now(),
+                    title: 'Stripe Payment Verified',
+                    desc: `Thank you ${handle}! Your 5 CHF support is logged live.`,
                     time: 'Just now'
                 });
-                state.communityFund.totalRaised += amtUSD;
-                updateMetrics();
-                renderSupportersWall();
+                renderNotifications();
             }
-
-            AudioSynth.playSuccessSound();
-            setTimeout(() => toggleDonationModal(false), 500);
         }
 
         // SUPABASE AUTH UTILITIES
