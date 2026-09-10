@@ -586,9 +586,9 @@
         </div>
     </div>
 
-    <!-- STRIPE & PAYPAL LIVE DONATION MODAL -->
+    <!-- STRIPE LIVE DONATION MODAL (THE NEST SUPPORTER - 5 CHF) -->
     <div id="donation-modal" class="hidden fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+        <div class="bg-dark-900 border border-emerald-900/50 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
             <button onclick="toggleDonationModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -598,76 +598,52 @@
                     <i data-lucide="heart-handshake" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">Keep Emergency Lights On</h3>
-                    <p class="text-xs text-emerald-400 font-mono">Direct Network Infrastructure Fund</p>
+                    <h3 class="text-base font-mono font-bold text-white uppercase tracking-wider">The Nest Supporter</h3>
+                    <p class="text-xs text-emerald-400 font-mono">Fester Netzwerk-Beitrag</p>
                 </div>
             </div>
 
             <div class="bg-dark-950 p-4 rounded-xl border border-dark-border mb-5">
                 <p class="text-xs text-slate-300 leading-relaxed font-sans italic">
-                    "This network runs on real support, not corporate ads. If this system helped you or you want to keep the emergency lights on for people facing debt panic, illegal firings, or breakdown loops, drop a contribution."
+                    "Dieses Netzwerk läuft durch reale Unterstützung, nicht durch Konzernwerbung. Mit deinem Beitrag von 5 CHF hältst du die Notfall-Infrastruktur rund um die Uhr online."
                 </p>
             </div>
 
-            <form id="donation-form" onsubmit="submitContribution(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">1. Select Contribution Tier</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button type="button" onclick="selectDonationAmount(5)" id="don-btn-5" class="don-amount-btn py-2 rounded-xl bg-dark-950 border border-dark-border text-slate-300 hover:border-emerald-500 font-mono text-xs font-bold">$5</button>
-                        <button type="button" onclick="selectDonationAmount(15)" id="don-btn-15" class="don-amount-btn py-2 rounded-xl bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 font-mono text-xs font-bold">$15</button>
-                        <button type="button" onclick="selectDonationAmount(50)" id="don-btn-50" class="don-amount-btn py-2 rounded-xl bg-dark-950 border border-dark-border text-slate-300 hover:border-emerald-500 font-mono text-xs font-bold">$50</button>
-                        <button type="button" onclick="selectDonationAmount(100)" id="don-btn-100" class="don-amount-btn py-2 rounded-xl bg-dark-950 border border-dark-border text-slate-300 hover:border-emerald-500 font-mono text-xs font-bold">$100</button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
+            <form id="donation-form" onsubmit="event.preventDefault();" class="space-y-4">
+                
+                <!-- Fixed 5 CHF Support Card -->
+                <div class="p-4 bg-emerald-950/40 border border-emerald-700/60 rounded-xl flex items-center justify-between">
                     <div>
-                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-1.5">Or Custom Amount ($)</label>
-                        <input type="number" id="custom-donation-amount" min="1" placeholder="15" oninput="clearAmountPreset()" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <span class="text-xs font-mono font-bold text-slate-200 block">System Support Beitritt</span>
+                        <span class="text-[11px] font-mono text-emerald-400">100% Transparent &amp; Reinvestiert</span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-1.5">Supporter Handle</label>
-                        <input type="text" id="supporter-alias" placeholder="@Anon-Hero" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <div class="text-right font-mono">
+                        <span class="text-lg font-bold text-emerald-300">5 CHF</span>
+                        <span class="text-[10px] text-slate-400 block">~ $6.18 USD</span>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-2">2. Payment Gateway</label>
-                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="paymethod" value="stripe" class="peer sr-only" checked onclick="togglePayDetails('stripe')">
-                            <div class="py-2.5 px-2 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400 flex items-center justify-center space-x-1.5">
-                                💳 <span>Stripe Credit Card</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="paymethod" value="paypal" class="peer sr-only" onclick="togglePayDetails('paypal')">
-                            <div class="py-2.5 px-2 text-center rounded-xl bg-dark-950 border border-dark-border peer-checked:border-emerald-500 peer-checked:bg-emerald-950/30 peer-checked:text-emerald-300 text-slate-400 flex items-center justify-center space-x-1.5">
-                                ☕ <span>PayPal.me Direct</span>
-                            </div>
-                        </label>
-                    </div>
+                    <label class="block text-xs font-mono uppercase tracking-wider text-slate-300 mb-1.5">Supporter Handle (Optional)</label>
+                    <input type="text" id="supporter-alias" placeholder="@Anon-Hero" class="w-full bg-dark-950 border border-dark-border rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
 
-                <div id="pay-details-stripe" class="p-3.5 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono space-y-2">
-                    <div class="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Encrypted Card Processing</span>
-                        <span class="text-emerald-400 font-bold">256-Bit SSL Secure</span>
+                <!-- Security Note -->
+                <div class="p-3.5 bg-dark-950 rounded-xl border border-emerald-900/40 text-xs font-mono space-y-1">
+                    <div class="flex items-center space-x-2 text-emerald-400 font-bold text-[11px]">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span>Sichere externe Abwicklung via Stripe</span>
                     </div>
-                    <div id="stripe-card-element" class="p-2.5 bg-dark-900 border border-dark-border rounded-lg text-slate-200">
-                        <input type="text" placeholder="Card: 4242 •••• •••• 4242 | MM/YY | CVC" class="w-full bg-transparent border-0 text-slate-200 focus:outline-none font-mono text-xs">
-                    </div>
+                    <p class="text-slate-400 text-[11px] leading-relaxed">
+                        Die Bezahlung wird sicher über das externe Stripe-Zahlungsportal durchgeführt. Es werden keine Kreditkartendaten auf dieser Webseite gespeichert.
+                    </p>
                 </div>
 
-                <div id="pay-details-paypal" class="hidden p-3.5 bg-dark-950 rounded-xl border border-dark-border text-xs font-mono text-slate-300 space-y-1">
-                    <p class="text-emerald-400 font-bold text-[11px]">PayPal.me Express Redirect</p>
-                    <p class="text-slate-400 text-[11px]">Clicking transmit will direct you to PayPal.me/SystemSurvival and log your contribution in real-time.</p>
-                </div>
-
-                <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/50 flex items-center justify-center space-x-2 transition-all transform active:scale-95">
-                    <i data-lucide="zap" class="w-4 h-4"></i>
-                    <span>CONFIRM &amp; LOG CONTRIBUTION</span>
-                </button>
+                <!-- Main Action Link/Button -->
+                <a href="https://buy.stripe.com/bJe9AU9dz1z4fR46N91Fe00" target="_blank" rel="noopener noreferrer" onclick="handleStripeButtonClick(event)" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/50 flex items-center justify-center space-x-2 transition-all transform active:scale-95 text-center block">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    <span>Confirm &amp; Log Contribution (5 CHF)</span>
+                </a>
             </form>
         </div>
     </div>
@@ -1042,17 +1018,11 @@
                 .subscribe();
         }
 
-        // DONATION SUBMISSION (STRIPE & PAYPAL & SUPABASE LOGGING)
-        async function submitContribution(e) {
-            e.preventDefault();
-            const amt = state.selectedDonationAmount || 15;
+        // STRIPE DONATION CLICK & SUPABASE LOGGING (THE NEST SUPPORTER - 5 CHF / $6.18 USD)
+        async function handleStripeButtonClick(e) {
+            const amtUSD = 6.18; // 5 CHF ~ $6.18 USD
             const derivedHandle = state.currentUser ? (state.currentUser.user_metadata?.username ? '@' + state.currentUser.user_metadata.username : '@' + state.currentUser.email.split('@')[0]) : '@Anon-Hero';
             const alias = document.getElementById('supporter-alias').value.trim() || derivedHandle;
-            const payMethod = document.querySelector('input[name="paymethod"]:checked').value;
-
-            if (payMethod === 'paypal') {
-                window.open(`https://paypal.me/SystemSurvival/${amt}`, '_blank');
-            }
 
             const newId = 'SUP-' + Date.now();
 
@@ -1060,28 +1030,28 @@
                 const { error } = await supabaseClient.from('supporters').insert({
                     id: newId,
                     handle: alias,
-                    amount: amt
+                    amount: amtUSD
                 });
                 if (error) {
                     console.error("❌ [Supabase Supporters Insert Error]:", error.message || error, error);
                 } else {
-                    console.log("✅ [Supabase Contribution Logged] Donor:", alias, "Amount:", amt);
+                    console.log("✅ [Supabase Contribution Logged] Donor:", alias, "Amount: 5 CHF (~$6.18 USD)");
                     await fetchSupportersFromSupabase();
                 }
             } else {
                 state.communityFund.supporters.unshift({
                     id: newId,
                     handle: alias,
-                    amount: amt,
+                    amount: amtUSD,
                     time: 'Just now'
                 });
-                state.communityFund.totalRaised += amt;
+                state.communityFund.totalRaised += amtUSD;
                 updateMetrics();
                 renderSupportersWall();
             }
 
             AudioSynth.playSuccessSound();
-            toggleDonationModal(false);
+            setTimeout(() => toggleDonationModal(false), 500);
         }
 
         // SUPABASE AUTH UTILITIES
