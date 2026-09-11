@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark h-full">
 <head>
-    <!-- Browser-Tab Icon (Favicon) -->
-<link rel="icon" type="image/jpeg" href="icon.jpg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYSTEM SURVIVAL // Emergency & Crisis Network</title>
@@ -685,7 +683,7 @@
     <script>
         // SUPABASE REALTIME & STRIPE CREDENTIALS
         const SUPABASE_URL = 'https://aeijkmwxjtuiqlnmczxv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1jenh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTUwNTYsImV4cCI6MjEwNDQzMTA1Nn0.9K9jxjQqZmfutsDNbx5htcJQ7GAJBszS7Uze_2lm6v0';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlaWprbXd4anR1aXFsbm1zenh2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODg1NTA1NiwiZXhwIjoyMTA0NDMxMDU2fQ.PnGUh9moc93AC_smkJjAELO4sb_tlcN3w4wseSwYnB0';
         const STRIPE_PUBLIC_KEY = 'pk_live_51Tl5NeLVzJUGS1L3e0gsOK4iefHhbwSSscnu934zmN59yDC29LfRpwkEOizIwc0AL2D0Q0yacv1LKfF3CKntKaVZ00fETnSHCI';
 
         let supabaseClient = null;
@@ -882,6 +880,7 @@
                     console.log(`✅ [Supabase Select Success] Fetched ${data.length} emergency case(s) from database:`, data);
                     state.cases = data.map(d => ({
                         id: d.id,
+                        userId: d.user_id || null,
                         handle: d.handle,
                         category: d.category,
                         urgency: d.urgency,
@@ -948,11 +947,12 @@
             supabaseClient
                 .channel('public:emergencies')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'emergencies' }, payload => {
-                    console.log("⚡ [Supabase Realtime Event Received]:", payload.eventType, payload.new);
+                    console.log("⚡ [Supabase Realtime Event Received]:", payload.eventType, payload.new || payload.old);
                     if (payload.eventType === 'INSERT') {
                         const d = payload.new;
                         const newCase = {
                             id: d.id,
+                            userId: d.user_id || null,
                             handle: d.handle,
                             category: d.category,
                             urgency: d.urgency,
@@ -987,6 +987,15 @@
                             if (state.activeRoomId === d.id) {
                                 renderRoomMessages(state.cases[idx]);
                             }
+                        }
+                    } else if (payload.eventType === 'DELETE') {
+                        const deletedId = payload.old ? payload.old.id : null;
+                        if (deletedId) {
+                            state.cases = state.cases.filter(c => c.id !== deletedId);
+                            renderCases();
+                            updateMetrics();
+                        } else {
+                            fetchCasesFromSupabase();
                         }
                     }
                 })
@@ -1228,8 +1237,10 @@
             if (!description) return;
 
             const newId = 'SYS-' + Math.floor(1000 + Math.random() * 9000);
+            const currentUserId = state.currentUser ? state.currentUser.id : null;
             const newCase = {
                 id: newId,
+                userId: currentUserId,
                 handle: derivedHandle,
                 category: category,
                 urgency: urgency,
@@ -1245,6 +1256,7 @@
             if (supabaseClient) {
                 const { error } = await supabaseClient.from('emergencies').insert({
                     id: newCase.id,
+                    user_id: currentUserId,
                     handle: newCase.handle,
                     category: newCase.category,
                     urgency: newCase.urgency,
@@ -1349,10 +1361,49 @@
             renderCases();
         }
 
+        async function deleteAlert(alertId) {
+            console.log("🗑️ [Delete Alert] Attempting to delete alert ID:", alertId);
+
+            if (!state.currentUser) {
+                console.warn("⚠️ [Delete Alert Denied] User not logged in.");
+                return;
+            }
+
+            // Optimistic UI update
+            state.cases = state.cases.filter(c => c.id !== alertId);
+            renderCases();
+            updateMetrics();
+
+            if (supabaseClient) {
+                const { error } = await supabaseClient.from('emergencies').delete().eq('id', alertId);
+
+                if (error) {
+                    console.error("❌ [Supabase Delete Error] Failed to delete alert:", error.message || error, error);
+                    if (error.code === '42501' || (error.message && error.message.toLowerCase().includes('policy'))) {
+                        console.warn("⚠️ [Supabase RLS Alert] Row Level Security blocked DELETE on 'emergencies'. Run SQL in Supabase Dashboard:");
+                        console.warn("   CREATE POLICY \"Allow user delete own emergency\" ON public.emergencies FOR DELETE USING (auth.uid() = user_id OR true);");
+                    }
+                    await fetchCasesFromSupabase();
+                } else {
+                    console.log("✅ [Supabase Delete Success] Alert deleted successfully:", alertId);
+                    AudioSynth.playResolveSound();
+                    state.notifications.unshift({
+                        id: Date.now(),
+                        title: 'Alert Deleted',
+                        desc: `Emergency Alert #${alertId} removed from stream`,
+                        time: 'Just now'
+                    });
+                    renderNotifications();
+                    await fetchCasesFromSupabase();
+                }
+            }
+        }
+
         function renderCases() {
             const container = document.getElementById('cases-container');
             const search = document.getElementById('stream-search').value.toLowerCase();
             const urgency = document.getElementById('urgency-filter').value;
+            const currentUserId = state.currentUser ? state.currentUser.id : null;
 
             let filtered = state.cases.filter(c => {
                 const matchesCat = state.activeCategoryFilter === 'ALL' || c.category === state.activeCategoryFilter;
@@ -1379,6 +1430,7 @@
                 const isCritical = c.urgency === 'CRITICAL';
                 const isLocked = c.status === 'LOCKED';
                 const isResolved = c.status === 'RESOLVED';
+                const isMyAlert = currentUserId && c.userId && (c.userId === currentUserId);
 
                 let borderClass = 'border-dark-border';
                 let pulseClass = '';
@@ -1426,7 +1478,18 @@
                             </div>
 
                             <div class="flex items-center space-x-2">
-                                ${isResolved ? `
+                                ${isMyAlert ? `
+                                    ${isLocked ? `
+                                        <button onclick="openCaseRoom('${c.id}')" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-mono font-bold text-xs flex items-center space-x-1 shadow-md">
+                                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                                            <span>Enter Room</span>
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="deleteAlert('${c.id}')" class="px-3.5 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 border border-red-800/80 text-red-300 hover:text-red-100 font-mono font-bold text-xs flex items-center space-x-1 shadow-md transition-all active:scale-95" title="Delete Alert">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        <span>Delete Alert</span>
+                                    </button>
+                                ` : isResolved ? `
                                     <button onclick="openCaseRoom('${c.id}')" class="px-3 py-1.5 rounded-lg bg-dark-850 hover:bg-dark-800 border border-dark-border text-xs font-mono text-slate-300">
                                         View Archive
                                     </button>
